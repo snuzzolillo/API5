@@ -1,14 +1,21 @@
 # API5
-Generic SQL to JSON API RESTful for JavaScritpt Ajax Component
+Generic SQL to JSON API RESTful for JavaScritpt Ajax Component<br>
 
+<green>**API RESTful Genérico de SQL a JSON para Componentes Ajax de JavaScript**</green><br>
+V.0.0.1<br>
+<br>
 <b>INTRODUCCION</b><br>
-API5 es una "interface" entre el fron-end y una base de datos SQL (para muchos base de datos es sinónimo de back-end) cuyo resultado es una estructura JSON. Podríamos decir que es una interface "SQLtoJSON" (ver mas adelante). Esta programado en PHP, simplemente porque fue el lenguaje que estuvo a la mano y solo se utiliza como un medio para que JavaScript llegue, lea  y opere con una base de datos relacional o RDBMS, pero en ningún momento el programador del front-end requiere elaborar un código PHP. 
+API5 es una "interface" entre el fron-end y una base de datos SQL (para muchos base de datos es sinónimo de back-end) cuyo resultado es una estructura JSON. Podríamos decir que es una interface "SQLtoJSON" (ver ejemplo mas adelante). Esta programado en PHP, simplemente porque fue el lenguaje que estuvo a la mano y solo se utiliza como un medio para que JavaScript llegue, lea  y opere con una base de datos relacional o RDBMS, pero en ningún momento el programador del front-end requiere elaborar un código PHP. 
 
 Definiendo PHP como el Middleware, la tendencia es que sea transparente para el propósito final de la API.
 (Nota: para esta versión la API ha sido probada con MYSQL y Oracle esperando pronto integrar POSTGRES y MSSQL).
 
 <b>SOBRE MODELO-VISTA-CONTROLADOR</b><br>
 Si definiéramos API5 dentro del esquema MVC, diríamos que API5 sustituye el modelo de datos por la "base de datos" entera, es decir, la base de datos para que exista tuvo que ser modelada según las necesidades de las reglas de negocio, por lo que se espera que un buen diseño debe contemplar una grafica de entidad relación o algo parecido a ella. Pues este MODELO Entidad-Relación es lo que se convierte en la "M" dentro una arquitectura MVC y la forma de accederlo es a través de la API. La Base de datos bien diseñada es, en si, el MODELO de datos, no hay por que redefinirla, con solo mirar la ENTIDAD-RELACION el programador puede conceptualizar todo el modelo de datos disponible.
+<br>
+<b>SQLtoJSON</b><br>
+La tendencia de esta interface es hacer uso al máximo de las capacidades del RDBMS de una manera simple e intuitiva para los que ya conocen el lenguaje SQL. Mi recomendación para  todo programador, independientemente del lenguaje que utilicen, es que deben estar familiarizados con el lenguaje SQL independientemente del RDBMS involucrado y del lenguaje de programación que dominan. Pero aun así, API5 puede permitir la creación de niveles de abstracción que permitan al desarrollador inexperto en SQL a obtener los datos requeridos desde el MODELO si el grupo de desarrollo mantiene entre sus integrantes un DBA o un conocedor del lenguaje SQL.
+<br>
 
 ### INSTALACION
 Debe tener acceso a modificar archivos del lado del servidor para efecto de configuración.<br>
