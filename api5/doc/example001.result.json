@@ -1,0 +1,72 @@
+{
+  "HEADER": {
+    "dept_no": {
+      "type": 3,
+      "type_raw": 254,
+      "size": 4,
+      "precision": 0,
+      "scale": 0,
+      "is_null": false,
+      "primary_key": true,
+      "auto_increment": false
+    },
+    "dept_name": {
+      "type": 3,
+      "type_raw": 253,
+      "size": 40,
+      "precision": 0,
+      "scale": 0,
+      "is_null": false,
+      "primary_key": false,
+      "auto_increment": false
+    }
+  },
+  "ERROR": {
+    "CODE": "0",
+    "MESSAGE": "SUCCESS"
+  },
+  "INFO": {
+    "RECORDS_COUNT": "9",
+    "CURRENT_PAGENUMBER": "1",
+    "CURRENT_PAGESIZE": "9",
+    "DB_TYPE": "MySQL"
+  },
+  "DATA": [
+    {
+      "dept_no": "d009",
+      "dept_name": "Customer Service"
+    },
+    {
+      "dept_no": "d005",
+      "dept_name": "Development"
+    },
+    {
+      "dept_no": "d002",
+      "dept_name": "Finance"
+    },
+    {
+      "dept_no": "d003",
+      "dept_name": "Human Resources"
+    },
+    {
+      "dept_no": "d001",
+      "dept_name": "Marketing"
+    },
+    {
+      "dept_no": "d004",
+      "dept_name": "Production"
+    },
+    {
+      "dept_no": "d006",
+      "dept_name": "Quality Management"
+    },
+    {
+      "dept_no": "d008",
+      "dept_name": "Research"
+    },
+    {
+      "dept_no": "d007",
+      "dept_name": "Sales"
+    }
+  ]
+}
