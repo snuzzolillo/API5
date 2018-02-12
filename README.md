@@ -20,8 +20,6 @@ Es decir a partir desde una Setencia SQL generar la salida en formato JSON. La t
 ### INSTALACION
 **Solo debe copiar el directorio API5 en su servidor WEB y está listo para su uso, puede ser en la raíz o en un sub directorio.**
 <br><br>
-Debe tener acceso a modificar archivos del lado del servidor para efecto de configuración.<br>
-<br>
 Requerimientos del lado del servidor<br>
 	• Apache 2.2 o superior (puede ser IIS)<br>
 	• PHP 5.4 o superior incluido PHP 7<br>
