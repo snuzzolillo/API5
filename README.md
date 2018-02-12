@@ -1,2 +1,2 @@
 # API5
-Generic SQL to JSON API rREST 
+Generic SQL to JSON API RESTful for JavaScritpt Ajax Component
