@@ -9,3 +9,5 @@ Definiendo PHP con el Middleware, la tendencia es que sea transparente para el p
 
 SOBRE MODELO-VISTA-CONTROLADOR
 Si definiéramos API5 dentro del esquema MVC, diríamos que API5 sustituye el modelo de datos por la "base de datos" entera, es decir, la base de datos para que exista tuvo que ser modelada según las necesidades de las reglas de negocio, por lo que se espera que un buen diseño debe contemplar una grafica de entidad relación o algo parecido a ella. Pues este MODELO Entidad-Relación es lo que se convierte en la "M" dentro una arquitectura MVC y la forma de accederlo es a través de la API. La Base de datos bien diseñada es, en si, el MODELO de datos, no hay por que redefinirla, con solo mirar la ENTIDAD-RELACION el programador puede conceptualizar todo el modelo de datos disponible.
+
+#INSTALACION
