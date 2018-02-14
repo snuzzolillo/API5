@@ -3,6 +3,9 @@ Generic SQL to JSON API RESTful for JavaScritpt Ajax Component<br>
 
 <green>**API RESTful Genérico de SQL a JSON para Componentes Ajax de JavaScript**</green><br>
 V.0.0.1<br>
+
+Documentacion Completa visite [API5](http:api5.project.com.ve).
+
 <br>
 <b>INTRODUCCION</b><br>
 API5 es una "interface" entre el fron-end y una base de datos SQL (para muchos base de datos es sinónimo de back-end) cuyo resultado es una estructura JSON. Podríamos decir que es una interface "SQLtoJSON" (ver ejemplo mas adelante). Ha sido programado en PHP, simplemente porque fue el lenguaje que estuvo a la mano y solo se utiliza como un medio para que JavaScript llegue, lea  y opere con una base de datos relacional o RDBMS, pero en ningún momento el programador del front-end requiere elaborar un código PHP. 
