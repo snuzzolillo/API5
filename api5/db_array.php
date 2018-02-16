@@ -1,15 +1,26 @@
 <?php
 
-//DB Array Class @0-90D6A92B
 /*
- * Database Management for PHP
- *
- * Copyright (c) 1998-2000 NetUSE AG
- *                    Boris Erdmann, Kristian Koehntopp
- * Derived from db_mssql.php
- *
- * db_array.php
- */ 
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
+
+ 
 
 class DB_Array {
   public $DBDatabase = "";
@@ -30,15 +41,13 @@ class DB_Array {
   public $Errno    = 0;
   public $Error    = "";
 
-  public $Auto_Free = 1;     ## set this to 1 to automatically free results
-  public $Debug     = 0;     ## Set to 1 for debugging messages.
-  public $Connected = false;
+  public $Auto_Free = 1;       public $Debug     = 0;       public $Connected = false;
   
   public $Stored_Query = 0;
   public $Child_Field  = "children";
   public $Parents      = array();
     
-  /* public: constructor */
+  
   function DB_Sql($query = "") {
       $this->query($query);
   }
@@ -138,7 +147,6 @@ class DB_Array {
 
 }
 
-//End DB Array Class
 
 
 ?>

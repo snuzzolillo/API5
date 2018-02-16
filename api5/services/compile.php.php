@@ -18,143 +18,160 @@
  +-----------------------------------------------------------------------+
 */
 
- error_reporting(E_ALL);?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>CryptoJS AES and PHP</title>
-<script type="text/javascript" src="aes.js"></script>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="../aes-json-format.js"></script>
-<script type="text/javascript">
-$(document).ready(function(){
-    $(".decrypt").on("click", function(){
-        $(this).prev().val(JSON.parse(CryptoJS.AES.decrypt($(".encrypted").val(), $(document.e).find(".pass").val(), {format: CryptoJSAesJson}).toString(CryptoJS.enc.Utf8)));
-    });
-});
-</script>
-</head>
-<body>
-<h1>CryptoJS AES and PHP</h1>
 
-<h2>Example to encrypt with PHP on serverside side and decrypt on client side</h2>
-<form name="e" method="post" action="">
-    Value to encrypt: <input type="text" name="val" value="<?php
+define("RelativePath", "..");
+define("PathToCurrentPage", "/services/");
+define("FileName", "compile.php.php");
 
-/*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
+require_once(RelativePath . "/Common.php");
 
- echo isset($_POST["val"]) ? $_POST["val"] : "My string - Could also be an JS array/object"?>" class="val" size="45"/><br/>
-    Passphrase: <input type="text" name="pass" class="pass" value="<?php
+$codeOriginal = CCGetParam('origen');
+$codeDestino = CCGetParam('destino');
+$codeDestino = CCGetParam('destino');
 
-/*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
-
- echo isset($_POST["pass"]) ? $_POST["pass"] : "my secret passphrase"?>" size="45"/><br/>
-    <input type="submit" name="encrypt" value="Send to server and encrypt, than decrypt with cryptoJS"/>
-    <?php
-
-/*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
-
-
-    if(isset($_POST["encrypt"])){
-        include("../cryptojs-aes.php");
-        ?>
-        <hr/>
-        <br/><br/>
-        Encrypted value generated by PHP: <input type="text" value="<?php
-
-/*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
-
- echo htmlentities(cryptoJsAesEncrypt($_POST["pass"], $_POST["val"]))?>" size="90" disabled="disabled" class="encrypted"/><br/>
-        Decrypted value: <input type="text" value="" size="90" disabled="disabled"/> <input class="decrypt" type="button" value="Decrypt now with cryptoJS"/>
-        <?php
-
-/*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
-
-
+function getDirs($initDir) {
+    $dirs = glob($initDir.'/*', GLOB_ONLYDIR);
+    foreach($dirs as $i => $value){
+                $dirs[$i] = basename($value);
     }
-    ?>
-</form>
+    return $dirs;
+}
+function getFiles($rootDir, $dirs)
+{
+    foreach ($dirs as $n => $dir) {
+                $filesDir = $rootDir . $dir;
 
-</body>
-</html>
+        foreach (glob($filesDir . "/*.php") as $file) {
+
+            echo "$file<br>\n";
+
+                                                
+        }
+    }
+}
+$dirs = array_merge([''],[]);
+$omitDir = ['.idea','textdb','textsql'];
+$rootDir = $codeOriginal;
+function getFilesFromDir($rootDir, $destDir) {
+    global $omitDir;
+    if ($handle = opendir($rootDir)) {
+
+        while (false !== ($entry = readdir($handle))) {
+
+            if ($entry != "." && $entry != ".." && !(in_array($entry,$omitDir))) {
+                if (is_dir("$rootDir/$entry")) {
+                    getFilesFromDir("$rootDir/$entry", "$destDir/$entry");
+                } else {
+                    compileFile($entry, $rootDir, $destDir);
+                    echo "$rootDir/$entry to $destDir/$entry<br>\n";
+                }
+            }
+        }
+
+        closedir($handle);
+    }
+}
+
+getFilesFromDir($rootDir, $codeDestino);
+die;
+getFiles($rootDir, $dirs);
+die;
+
+function compileFile($file, $from, $to)
+{
+    $date = date('m/d/Y');
+    $time = date('h:i:s A');
+    $version = '0.0.1';
+    $header = "
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : $date                                                 |
+ |   Time   : $time                                                |
+ |   Version: $version                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+";
+    if (is_file("$from/$file")) {
+        echo "Read File $from/$file<br>\n";
+        $fileStr = file_get_contents("$from/$file");
+        $newStr = '';
+
+        $commentTokens = array(T_COMMENT);
+
+        if (defined('T_DOC_COMMENT'))
+            $commentTokens[] = T_DOC_COMMENT;         if (defined('T_ML_COMMENT'))
+            $commentTokens[] = T_ML_COMMENT;  
+        $tokens = token_get_all($fileStr);
+
+        foreach ($tokens as $token) {
+            if (is_array($token)) {
+                if (in_array($token[0], $commentTokens))
+                    continue;
+
+                $token = $token[1];
+            }
+
+            $newStr .= $token;
+        }
+        $newStr = str_replace("<?php
+
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+", "<?php
+
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+\n" . $header . "\n", $newStr);
+                        if (!is_dir($to)) {
+            echo "Create Directory $to<br>\n";
+            mkdir($to);
+        }
+        echo "Save file $to/$file<br>\n";
+        file_put_contents("$to/$file",$newStr);
+
+    } else {
+        echo "$from/$file not found ,br>\n";
+    }
+}

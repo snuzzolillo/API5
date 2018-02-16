@@ -1,6 +1,25 @@
 <?php
 
-//DB Adapter Class @0-66A67699
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
+
 class DB_Adapter
 {
     public $DateFormat;
@@ -42,12 +61,13 @@ class DB_Adapter
 
     public $Errno;
     public $Error;
+    public $Type;
 
     public $DateLeftDelimiter = "'";
     public $DateRightDelimiter = "'";
 
     function Initialize() {
-        $this->LastSQL = "";
+                $this->LastSQL = "";
         $this->RecordsCount = 0;
         $this->RecordNumber = 0;
         $this->AbsolutePage = 0;
@@ -56,6 +76,7 @@ class DB_Adapter
 
     function SetProvider($Configuration = array()) {
         $DBLib = "DB_" . $Configuration["DBLib"];
+
         $DBLibFile = RelativePath . "/" . strtolower($DBLib) . ".php";
         include_once($DBLibFile);
         $this->Provider = new $DBLib;
@@ -70,8 +91,10 @@ class DB_Adapter
         $this->DBPassword = & $this->Provider->DBPassword;
         $this->Persistent = & $this->Provider->Persistent;
         $this->Uppercase = & $this->Provider->Uppercase;
+        $this->Type = & $this->Provider->Type;
         $this->Provider->Errors = new clsErrors();
         $this->Errors = & $this->Provider->Errors;
+
 
         if (isset($Configuration["DBLib"]))
             $this->DB = $Configuration["DBLib"];
@@ -101,7 +124,9 @@ class DB_Adapter
             $this->BooleanFormat = $Configuration["BooleanFormat"];
         if (isset($Configuration["Uppercase"]))
             $this->Uppercase = $Configuration["Uppercase"];
-    }
+        if (isset($Configuration["Type"]))
+            $this->Type = $Configuration["Type"];
+                    }
 
     function MoveToPage($Page) {
         global $CCSLocales;
@@ -302,7 +327,6 @@ class DB_Adapter
         return $this->Provider->Query_ID;
     }
 }
-//End DB Adapter Class
 
 
 ?>

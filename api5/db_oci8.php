@@ -1,25 +1,31 @@
 <?php
 
-//DB OCI8 Class @0-34027488
-      
 /*
- * Oracle/OCI8 Database Management for PHP
- *
- * (C) Copyright 1999-2000 Stefan Sels phplib@sels.com
- *
- * based on db_oracle.php by Luis Francisco Gonzalez Hernandez 
- * contains metadata() from db_oracle.php 1.10
- *
- * Modified by Vitaliy Radchuk  <vitaliy.radchuk@yessoftware.com>
- *
- * db_oci8.php
- *
- */ 
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
+
+      
+ 
 
 class DB_OracleOCI {
   public $Debug    =  0;
-  public $sqoe     =  1; // sqoe= show query on error
-
+  public $sqoe     =  1; 
   public $DBDatabase = "";
   public $DBUser     = "";
   public $DBPassword = "";
@@ -40,7 +46,7 @@ class DB_OracleOCI {
 
   public $Error     = "";
 
-  /* public: constructor */
+  
   function DB_Sql($query = "") {
   }
 
@@ -85,8 +91,7 @@ class DB_OracleOCI {
           if (!$this->Link_ID) {
               $this->Error=OCIError();
               $this->Halt($this->Error);
-              #$this->Halt("Cannot connect to Database: " . $this->Error["message"]. " ". $this->Error);
-              return 0;
+                            return 0;
           }
 
           if($this->Debug) {
@@ -105,15 +110,11 @@ class DB_OracleOCI {
   }
 
   function query($Query_String) {
-    /* No empty queries, please, since PHP4 chokes on them. */
+    
     if ($Query_String == "")
-      /* The empty query string is passed on from the constructor,
-       * when calling the class without a query, e.g. in situations
-       * like these: '$db = new DB_Sql_Subclass;'
-       */
+      
       return 0;
-      // Suspende Temporalmente el error handler para poder capturar el error de Oracle
-      restore_error_handler();
+            restore_error_handler();
       $this->connect();
 
       $this->Query_ID = OCIParse($this->Link_ID, $Query_String);
@@ -121,8 +122,7 @@ class DB_OracleOCI {
         $this->Error=OCIError($this->Query_ID);
           $this->Halt($this->Error);
       } else {
-          #echo "QUERY=$Query_String\n";
-          $old_error_reporting = error_reporting();
+                    $old_error_reporting = error_reporting();
           error_reporting($old_error_reporting & ~E_WARNING);
           if(sizeof($this->Binds) > 0) {
               foreach ($this->Binds as $parameter_name => $parameter_values) {
@@ -132,19 +132,13 @@ class DB_OracleOCI {
                   if($parameter_values[2] == 0)
                       OCIBindByName ($this->Query_ID, ":" . $parameter_name, $this->Binds[$parameter_name][0], $parameter_values[1]);
                   else {
-                      #  echo $parameter_name."\n";
-                      OCIBindByName($this->Query_ID, ":" . $parameter_name, $this->Binds[$parameter_name][0], $parameter_values[1], $parameter_values[2]);
+                                            OCIBindByName($this->Query_ID, ":" . $parameter_name, $this->Binds[$parameter_name][0], $parameter_values[1], $parameter_values[2]);
                   }
               }
           }
 
           OCIExecute($this->Query_ID);
-          #try {
-          #    $r = oci_execute($this->Query_ID);
-          #} catch (Exception $e) {
-          #    ;
-          #}
-          error_reporting($old_error_reporting);
+                                                            error_reporting($old_error_reporting);
 
           $this->Error=OCIError($this->Query_ID);
       }
@@ -155,11 +149,10 @@ class DB_OracleOCI {
           printf("Debug: query = %s<br>\n", $Query_String);
       }
       
-      if (/*$this->Error["code"] != 1403 && */$this->Error["code"] != 0 && $this->sqoe) {
+      if ($this->Error["code"] != 0 && $this->sqoe) {
           $this->Halt($this->Error, $Query_String );
       }
-      #echo "<BR><FONT color=red><B>".$this->Error["message"]."<BR>Query :\"$Query_String\"</B></FONT>";
-
+      
 
       if(sizeof($this->Binds) > 0)
       {
@@ -176,8 +169,7 @@ class DB_OracleOCI {
         $this->Binds = array();
       }
 
-      // Reestablece el error handler
-      set_error_handler("all_errors_handler", E_ALL);
+            set_error_handler("all_errors_handler", E_ALL);
       return $this->Query_ID;
 
 
@@ -195,8 +187,7 @@ class DB_OracleOCI {
           $this->Row        +=1;
           
           $errno=OCIError($this->Query_ID);
-          if(1403 == $errno) { # 1043 means no more records found
-              $this->Error="";
+          if(1403 == $errno) {               $this->Error="";
               $this->disconnect();
               $stat=0;
           } else {
@@ -234,47 +225,11 @@ class DB_OracleOCI {
       $id    = 0;
       $res   = array();
       
-    /*
-     * Due to compatibility problems with Table we changed the behavior
-     * of metadata();
-     * depending on $full, metadata returns the following values:
-     *
-     * - full is false (default):
-     * $result[]:
-     *   [0]["table"]  table name
-     *   [0]["name"]   field name
-     *   [0]["type"]   field type
-     *   [0]["len"]    field length
-     *   [0]["flags"]  field flags ("NOT NULL", "INDEX")
-     *   [0]["format"] precision and scale of number (eg. "10,2") or empty
-     *   [0]["index"]  name of index (if has one)
-     *   [0]["chars"]  number of chars (if any char-type)
-     *
-     * - full is true
-     * $result[]:
-     *   ["num_fields"] number of metadata records
-     *   [0]["table"]  table name
-     *   [0]["name"]   field name
-     *   [0]["type"]   field type
-     *   [0]["len"]    field length
-     *   [0]["flags"]  field flags ("NOT NULL", "INDEX")
-     *   [0]["format"] precision and scale of number (eg. "10,2") or empty
-     *   [0]["index"]  name of index (if has one)
-     *   [0]["chars"]  number of chars (if any char-type)
-     *   ["meta"][field name]  index of field named "field name"
-     *   The last one is used, if you have a field name, but no index.
-     *   Test:  if (isset($result['meta']['myfield'])) {} ...
-     */
+    
 
       $this->connect();
 
-      ## This is a RIGHT OUTER JOIN: "(+)", if you want to see, what
-      ## this query results try the following:
-      ## $table = new Table; $db = new my_DB_Sql; # you have to make
-      ##                                          # your own class
-      ## $table->show_results($db->query(see query vvvvvv))
-      ##
-      $this->query("SELECT T.table_name,T.column_name,T.data_type,".
+                                          $this->query("SELECT T.table_name,T.column_name,T.data_type,".
            "T.data_length,T.data_precision,T.data_scale,T.nullable,".
            "T.char_col_decl_length,I.index_name".
            " FROM ALL_TAB_COLUMNS T,ALL_IND_COLUMNS I".
@@ -304,7 +259,6 @@ class DB_OracleOCI {
         $i++;
       }
       if ($full) $res["num_fields"]=$i;
-#      $this->disconnect();
       return $res;
   }
 
@@ -407,13 +361,7 @@ class DB_OracleOCI {
 
   function halt($msg, $query=null) {
       $msg["message"] = str_replace(array("\\", '"', "/", "\n" , "\r", "\t", "\b"), array("\\\\", '\"', '\/', '\\n', '', '\t', '\b'), $msg["message"]);
-      error_manager($msg["message"], 'ORA-'.$msg["code"]);
-      //$e = '{"ERROR" : {"CODE":"'.$msg["code"].'", "MESSAGE" : "'.$msg["message"].'", "TYPE":"Oracle", "SQL":"'.$query.'"}}';
-      //die($e);
-      //printf("</td></tr></table><b>Database error:</b> %s<br>\n", $msg);
-      //printf("<b>ORACLE Error</b>: %s<br>\n",
-      //$this->Error["message"]);
-      //die("Session halted.");
+      error_manager($msg["message"], $msg["code"], 'DB');
   }
 
   function lock($table, $mode = "write") {
@@ -461,7 +409,6 @@ class DB_OracleOCI {
   }
 }
 
-//End DB OCI8 Class
 
 
 ?>

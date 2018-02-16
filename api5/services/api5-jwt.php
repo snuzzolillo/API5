@@ -1,21 +1,29 @@
 <?php
 
 /*
- * Genera un Token de trabajo a apeticion para actividades especificas de desarrollo
- * parametros:
- * generate=<x>
- * donde x es :
- *  "demo" :
- *  "databaseadmin" :
- *  "developer" :
- *  "dataexchange":
- *
- * Debe ser generado desde el browser y ser copiado y pegado en el java script en sustitucion a una respuesta de LOGIN
- *
- */
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
 
 
-/* AREA DE DEPENDENCIAS */
+
+
+
+
+
 define("RelativePath", "..");
 define("PathToCurrentPage", "/services/");
 define("FileName", "api5-jwt.php");
@@ -27,9 +35,9 @@ require_once RelativePath . '/services/JWT/Firebase/JWT.php';
 global $CONFIG;
 $CONFIG = file_get_contents("../textdb/default.config.php");
 $CONFIG = json_decode_and_validate(clsCore::getSqlParsed(clsCore::sqlSplitFromStringWithTags($CONFIG,'config'),'config'),'API5');
-/* esto debe ser leido del config */
+
 $key  = isset($CONFIG->tokenKey) ? $CONFIG->tokenKey : "";
-/*********************************/
+
 
 $generate = CCGetParam("generate");
 switch ($generate) {
@@ -52,25 +60,16 @@ switch ($generate) {
     default :
         die('BAD REQUEST');
 }
-/*
- * aud values debera validarse segun la descripcion de cada aud
- *  "demo" :
- *  "databaseadmin" :
- *  "developer" :
- *  "dataexchange":
- */
 
 
-// GENERA UN TOKEN CON UNA SEMANA DE VENCIMIENTO
+
 $token = array(
     "iss" => "DOSQL"
     ,"sub" => "api5"
     ,"aud" => $aud
     ,"iat" => time()
-    ,"exp" => time()+ (7 * 24 * 60 * 60) // A week
-    ,"nbf" => 1357000000
-    ## STANDARS
-    ,"uid" => $uid
+    ,"exp" => time()+ (7 * 24 * 60 * 60)     ,"nbf" => 1357000000
+        ,"uid" => $uid
     ,"data" => '{"username":"anonymous", "userroles":[1,2]}'
 );
 

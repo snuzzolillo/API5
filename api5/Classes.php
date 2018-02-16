@@ -1,9 +1,27 @@
 <?php
 
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
 
-//Constant List
 
-// ------- Controls ---------------
+
+
+
 define("ccsLabel",           1);
 define("ccsLink",            2);
 define("ccsTextBox",         3);
@@ -27,7 +45,6 @@ $ControlTypes = array(
 );
 
 
-// ------- Operators --------------
 define("opEqual",              1);
 define("opNotEqual",           2);
 define("opLessThan",           3);
@@ -47,21 +64,17 @@ define("opBetween",            16);
 define("opNotIn",              17);
 define("opNotBetween",         18);
 
-// ------- Datasource types -------
 define("dsTable",        1);
 define("dsSQL",          2);
 define("dsProcedure",    3);
 define("dsListOfValues", 4);
 define("dsEmpty",        5);
 
-// ------- CheckBox states --------
 define("ccsChecked", true);
 define("ccsUnchecked", false);
 
 
-//End Constant List
 
-//CCCheckValue @0-962BACE6
 function CCCheckValue($Value, $DataType)
 {
   $result = false;
@@ -75,9 +88,7 @@ function CCCheckValue($Value, $DataType)
     $result = is_bool($Value); 
   return $result;
 }
-//End CCCheckValue
 
-//clsControl Class @0-FE861DA1
 class clsControl
 {
   public $ComponentType = "Control";
@@ -680,9 +691,7 @@ class clsControl
 
 }
 
-//End clsControl Class
 
-//clsField Class @0-3A089A0E
 class clsField
 {
   public $DataType;
@@ -696,8 +705,7 @@ class clsField
 
   public function __construct($Name, $DataType, $DBFormat)
   {
-    // Constructor's functionality here, if you have any.
-    $this->Name = $Name;
+        $this->Name = $Name;
     $this->DataType = $DataType;
     $this->DBFormat = $DBFormat;
 
@@ -827,9 +835,7 @@ class clsField
   }
 }
 
-//End clsField Class
 
-//clsErrors Class @0-D11BE15C
 class clsErrors
 {
   public $Errors;
@@ -838,8 +844,7 @@ class clsErrors
 
   public function __construct()
   {
-    // Constructor's functionality here, if you have any.
-    global $CCSIsXHTML;
+        global $CCSIsXHTML;
     $this->Errors = array();
     $this->ErrorsCount = 0;
     $this->ErrorDelimiter = $CCSIsXHTML ? "<br />" : "<BR>";
@@ -887,9 +892,7 @@ class clsErrors
   }
 
 }
-//End clsErrors Class
 
-//clsLocaleInfo @0-2B050E1A
 class clsLocaleInfo {
   public $FormatInfo;
   public $Name;
@@ -920,8 +923,7 @@ class clsLocaleInfo {
 
   public function __construct($name, $LocaleInfoArray)
   {
-    // Constructor's functionality here, if you have any.
-    $this->Name = $name;
+        $this->Name = $name;
     $this->Language = $LocaleInfoArray[0];
     $this->Country = $LocaleInfoArray[1];
 
@@ -984,9 +986,7 @@ class clsLocaleInfo {
   }
 }
 
-//End clsLocaleInfo
 
-//clsLocale Class @0-684BF395
 class clsLocale {
   public $Name;
   public $Dir;
@@ -1000,8 +1000,7 @@ class clsLocale {
 
   public function __construct($name, $LocaleInfoArray, $dir = "")
   {
-    // Constructor's functionality here, if you have any.
-    $this->Name = $name;
+        $this->Name = $name;
     $this->Dir = $dir;
     $this->Translations = array();
     $this->LocaleInfo = new clsLocaleInfo($name, $LocaleInfoArray);
@@ -1059,9 +1058,7 @@ class clsLocale {
   }
 }
 
-//End clsLocale Class
 
-//clsLocales Class @0-56E9E3A4
 class clsLocales {
   public $Locale;
   public $DefaultLocale;
@@ -1070,14 +1067,10 @@ class clsLocales {
 
   public function __construct($dir, $locale = "")
   {
-    // Constructor's functionality here, if you have any.
-    //self::__construct($dir, $locale = "");
-    $this->Dir = $dir;
-    $this->Locale = $locale; //is_array($locale) ? $locale : array($locale);
-    $this->DefaultLocale = "";
+            $this->Dir = $dir;
+    $this->Locale = $locale;     $this->DefaultLocale = "";
     $this->Locales = array();
-    //var_dump($this->Locale); die;
-  }
+      }
 
   function clsLocales($dir, $locale = "")  {
     self::__construct($dir, $locale);
@@ -1198,9 +1191,7 @@ class clsLocales {
 }
 
 
-//End clsLocales Class
 
-//clsMainPage Class @0-90640A0C
 class clsMainPage
 {
   public $ComponentType = "Page";
@@ -1208,9 +1199,7 @@ class clsMainPage
   public $Connections = array();
   public $Attributes = array();
 }
-//End clsMainPage Class
 
-//clsAttribute class @0-738BF458
 class clsAttribute {
   public  $ComponentType = "Attribute";
   public  $DataType = ccsText;
@@ -1223,8 +1212,7 @@ class clsAttribute {
 
   public function __construct($Name, $Prefix, $DataType="", $Format = "")
   {
-    // Constructor's functionality here, if you have any.
-    $this->Name = $Name;
+        $this->Name = $Name;
     $this->Prefix = $Prefix;
     if ($this->DataType)
       $this->DataType = $DataType;
@@ -1271,9 +1259,7 @@ class clsAttribute {
   }
 
 }
-//End clsAttribute class
 
-//clsAttributes class @0-8EA3CF6D
 class clsAttributes {
   public  $ComponentType = "Attributes";
   public $Objects = array();
@@ -1283,8 +1269,7 @@ class clsAttributes {
 
   public function __construct($Prefix)
   {
-    // Constructor's functionality here, if you have any.
-    $this->Prefix = $Prefix;
+        $this->Prefix = $Prefix;
   }
 
   function clsAttributes($Prefix) {
@@ -1355,9 +1340,7 @@ class clsAttributes {
   }
 
 }
-//End clsAttributes class
 
-//clsMasterPageTemplate class @0-CFFF2CB7
 class clsMasterPageTemplate {
 
   public $Redirect;
@@ -1380,8 +1363,7 @@ class clsMasterPageTemplate {
 
   public function __construct()
   {
-    // Constructor's functionality here, if you have any.
-    $this->Visible = true;
+        $this->Visible = true;
     $this->Redirect = "";
   }
 
@@ -1426,6 +1408,5 @@ class clsMasterPageTemplate {
   }
   
 }
-//End clsMasterPageTemplate class
 
 ?>

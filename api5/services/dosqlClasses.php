@@ -1,113 +1,87 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: seven-11
- * Date: 04/01/2018
- * Time: 11:54 AM
- */
-// GLOBALS VARIABLES
-$SYSTEM     = new stdClass(); // Variables del Sistema solo conocidas por el back-end
-$GLOBALS    = new stdClass(); // Variables GLOBALES conocidas por el front-end y por el Back-End
-$PARAMETERS = new stdClass(); // Variables PASADAS por BIND
-$BINDED     = new stdClass(); // Lista de Parametros en el SQL y en el parametro POST $BIND
-$BINDED_IN_SQL = array(); // Solo Lista de Parametros en el SQL, necesario para ORACLE BIND
 
-// NOTA: Inicializar una varibale PHP con "= null;" retorna isset() en false
-// TODO: Crear la lista de variables SYSTEM y como asignarle valor
-// ejemplo:
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
+
+$SYSTEM     = new stdClass(); $GLOBALS    = new stdClass(); $PARAMETERS = new stdClass(); $BINDED     = new stdClass(); $BINDED_IN_SQL = array(); 
 $SYSTEM->{"SYSDATE"}     = 'date';
 
-// TODO: Crear varibales GLOBALES que sean visibls en el servidor y en el BROWSER
-//
 $GLOBALS->{"username"}     = 'any user';
 
 class clsCore {
 
     public static function parse_raw_http_request()
     {
-        // USED WHEN HTTP header Content-Type = Application/json
-        // normalmente enviado por angular JS
-        // en estos casos PHP no hace el paersin autmatico y las parametros POST estan en el input
+                        
+                $input = file_get_contents('php://input');
 
-        // read incoming post data
-        $input = file_get_contents('php://input');
-
-        // grab multipart boundary from content type header
-        //preg_match('/-----------------------------(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
-        preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
+                        preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
         if (count($matches)) {
-            //preg_match('/Content-Disposition\:\ form-data\;(.*)$/', $input, $matches);
-            $boundary = $matches[1];
+                        $boundary = $matches[1];
         } else {
             $boundary = "";
         }
-        // split content by boundary and get rid of last -- element
-        $a_blocks = preg_split("/--+$boundary/", $input);
+                $a_blocks = preg_split("/--+$boundary/", $input);
         foreach ($a_blocks as $id => $block)
         {
             if (empty($block))
                 continue;
 
-            // you'll have to var_dump $block to understand this and maybe replace \n or \r with a visibile char
-
-            // parse uploaded files
-            if (strpos($block, 'application/octet-stream') !== FALSE)
+            
+                        if (strpos($block, 'application/octet-stream') !== FALSE)
             {
-                // match "name", then everything after "stream" (optional) except for prepending newlines
-                preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
+                                preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
             }
-            // parse all other fields
-            else
+                        else
             {
-                // match "name" and optional value in between newline sequences
-                preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);
-                //$var[$matches[1]] = $matches[2];
-            }
-            #echo "Match $id\n";
-            if (isset($matches[1])) $a_data[$matches[1]] = $matches[2];
+                                preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);
+                            }
+                        if (isset($matches[1])) $a_data[$matches[1]] = $matches[2];
         }
         return $a_data;
     }
 
     public static function validateSqlStatement($SQL, $type)
     {
-        // %type esperados son
-        // QUERY -- SOLO SELECT sin INTO
-        // DML -- INSERT UPDATE DELETE SELECT .. INTO ...
-        // TABLE
-        // HRCHY
-        if (strtoupper($type) == 'TABLE') {
-            // nada que validar, pes la sentencia es construida
-            return true;
+                                                if (strtoupper($type) == 'TABLE') {
+                        return true;
         }
         $tmpSQL = strtoupper(trim($SQL));
         switch (strtoupper($type)) {
             case "QUERY" :
             case "HRCHY" :
-                // DEBEN empezar por select
-                if (substr($tmpSQL, 0, 7) !== 'SELECT ') {
-                    // invalid
-                    error_manager("SQL statement invalid for transaction type $type", -20190);
+                                if (substr($tmpSQL, 0, 7) !== 'SELECT ') {
+                                        error_manager("SQL statement invalid for transaction type $type", -20190);
                 }
 
                 $pos = (strpos($tmpSQL, 'SELECT ') === 0 and strpos($tmpSQL, ' INTO ') > 0);
-                #var_dump($pos);
-                if ($pos) {
-                    // invalid
-                    error_manager("SQL statement invalid for transaction type $type", -20190);
+                                if ($pos) {
+                                        error_manager("SQL statement invalid for transaction type $type", -20190);
                 }
                 break;
             case "DML" :
-                // deben empezar por 'INSERT', 'DELETE', 'UPDATE'
-                // o contener la pareja SELECT INTO
-                $pos = (strpos($tmpSQL, 'INSERT ') === 0 || strpos($tmpSQL, 'DELETE ') === 0 || strpos($tmpSQL, 'UPDATE ') === 0);
-                #var_dump($pos);
-                if ($pos) break;
+                                                $pos = (strpos($tmpSQL, 'INSERT ') === 0 || strpos($tmpSQL, 'DELETE ') === 0 || strpos($tmpSQL, 'UPDATE ') === 0);
+                                if ($pos) break;
                 $pos = (strpos($tmpSQL, 'SELECT ') === 0 and strpos($tmpSQL, ' INTO ') > 0);
-                #var_dump($pos);
-                if ($pos) break;
-                // invalid
-                error_manager("SQL statement invalid for transaction type $type", -20190);
+                                if ($pos) break;
+                                error_manager("SQL statement invalid for transaction type $type", -20190);
                 break;
             case "LOGIN" :
                 break;
@@ -117,17 +91,13 @@ class clsCore {
     }
 
     public static function returnJson($data=false, $error=false, $info=false, $header=false, $binded=false, $otherdata=false) {
-        // Funcion unica de retorno del JSON al BROWSER como resultado del llamado a la API
-
-        # ESTO ES GLOBAL ########################
-        global $Charset;
+        
+                global $Charset;
         global $CCConnectionSettings;
         global $sourceName;
         global $resultAction;
-        # #######################################
-
-        # #######################################
-        $ContentType    = "application/json";
+        
+                $ContentType    = "application/json";
         $Charset        = $Charset ? $Charset : "utf-8";
 
         if ($Charset) {
@@ -135,12 +105,8 @@ class clsCore {
         } else {
             header("Content-Type: " . $ContentType);
         }
-        # #######################################
-
-        //
-        // Los valores  $resultAction xxxonly determinan que el JSON resultante es un objeto unico
-        //
-        switch ($resultAction) {
+        
+                                switch ($resultAction) {
             case 'dataonly':
                 echo json_encode(((!is_object($data) and !is_array($data)) ? json_decode($data) : $data));
                 die;
@@ -163,28 +129,18 @@ class clsCore {
                 break;
             case 'erroronly' :
                 $r = ((!is_object($error) and !is_array($error)) ? json_decode($error) : $error);
-                echo json_encode($r);
-                die;
-                break;
+                error_manager($r->MESSAGE, $r->CODE, '', 200);
+                                                break;
             default :
                 break;
         }
 
-        # si $otherdata trae valor, build el elemento result
-        if ($otherdata) {
-            // Other data es en caso de no desear una estructura extra como error, info etc.
-            // normalmente usado para el caso de dataonly donde quien solicita la data solo
-            // espera un json de data resultante. Esto tiene el mismo efecto que usar $resultAction
-            // pero la estructura a retornar esta en $otherdata
-            $result = ((!is_object($otherdata) and !is_array($otherdata)) ? json_decode($otherdata) : $otherdata);
+                if ($otherdata) {
+                                                            $result = ((!is_object($otherdata) and !is_array($otherdata)) ? json_decode($otherdata) : $otherdata);
         } else {
-            //
-            // Construye la estructura resultate creando una sub-estructura dependiendo de los valores enviados
-            //
-            $result = new stdClass();
+                                                $result = new stdClass();
             if ($header)    $result->{'HEADER'} = ((!is_object($header) and !is_array($header)) ? json_decode($header) : $header);
-            if ($error)     $result->{'ERROR'} = ((!is_object($error) and !is_array($error)) ? json_decode($error) : $error);
-            if ($info){
+                        if ($info){
                 $result->{'INFO'} = ((!is_object($info) and !is_array($info)) ? json_decode($info) : $info);
                 $result->INFO->{"DB_TYPE"} = $CCConnectionSettings[$sourceName]["Type"];
             }
@@ -198,49 +154,26 @@ class clsCore {
     }
 
     public static function simplifyNextRecord(& $db, $part='string') {
-        //
-        // Esta funcion fue creada para simplficar el retorno de un Record de la BD ya que el adaptador
-        // por defecto retorna en el mismo array, los valores por posicion (numerico) y por referencia
-        // "nombre de la columna"
-        //
-        # ELIMINA los elementos con indices numericos
-        if ($db->next_record()) {
+                                                        if ($db->next_record()) {
             foreach ($db->Record as $key => $val)
-                if (is_numeric($key) and $part == 'string') // only numbers, a point and an `e` like in 1.1e10
-                    unset($db->Record[$key]);
+                if (is_numeric($key) and $part == 'string')                     unset($db->Record[$key]);
                 else if (!is_numeric($key) and $part !== 'string')
                     unset($db->Record[$key]);
             return true;
         } else
             return false;
-        #var_dump($db->Record);
-    }
+            }
 
     public static function sqlSetParameters(& $db, $SQL, $bind){
-        //
-        // Los SQL statements pueden contener variables, las cuales son aquellas prefijadas con ":"
-        // esta funcion permite ubicar dichas variables dentro del SQL y asignarles valores desde
-        // la estructura $bind, la cual es normalmente enviada por el parametro POST $BIND
-        //
-        # Extrae las variables dentro del SQL y recostruye la statement segun sea el caso del tipo de DB
-        # el resultado de las variables esta en $BINDED y los valores posibles estan en $PARAMETERS, $SYSTEM y $GLOBALS
-        $SQL = clsCore::sqlBindVariables($SQL, $bind);
-        #echo "sqlSetParameters -> sqlBindVariables : Todo bien hasta aqui $SQL\n";
+                                                                $SQL = clsCore::sqlBindVariables($SQL, $bind);
+        
+                        clsCore::setBindValues($db);
 
-        # Coloca los valores apareando las varibales en $BINDED con los valores correspondientes
-        # de tal manera que queden disponibles por el SQL al momento de ejecucion, la tecnica depende del tipo de BD
-        clsCore::setBindValues($db);
-
-        #Retorna el SQL STATMENT recostruido si fuera el caso;
-        return $SQL;
+                return $SQL;
     }
 
     public static function normalizeJSONObjectAttrName($json, $case = CASE_LOWER){
-        //
-        // Esta funcion normaliza los nombres asociativos de un OBJETO y/o JSON
-        // Por defecto todos son lowercase y es para poder referenciar a dichos nombre de una manera unica
-        // por ejemplo "ProductID" se convierte en "productid"
-
+                                
         if (is_object($json) or is_array($json)) {
             $json = json_encode($json);
         }
@@ -248,18 +181,14 @@ class clsCore {
         if (json_last_error()) {
             error_manager('normalizeJSONObjectAttrName JSON ERROR '.json_last_error_msg(), -20999);
         }
-        //var_dump($object);
-        if ($object) $object =  clsCore::normalizeObjectAttrName($object, $case );
+                if ($object) $object =  clsCore::normalizeObjectAttrName($object, $case );
 
-        // return a json text
-        return  json_encode($object);
+                return  json_encode($object);
 
     }
 
     public static function normalizeObjectAttrName($arr, $case = CASE_LOWER){
-        // Asgura que el objeto a formarse desde el JSON sean todas en minusculas para evitar problema de tipeo
-        // TRATA al OBJETO como un ARREGLO asociativo
-        return array_map(function($item){
+                        return array_map(function($item){
             if(is_array($item))
                 $item = clsCore::normalizeObjectAttrName($item);
             return $item;
@@ -268,74 +197,29 @@ class clsCore {
 
 
     public static function sqlTableOperation() {
-        //
-        // Esta funcion es exclusiva para operaciones directas de INSERT, UPDATE, DELETE con TABLAS
-        // DENTRO DEL CRUD, HACE UN CUD
-        // DEBE SER LLAMADA CUANDO transactiontype == table o __transaction_type=table
-        // Nota:    la base de esta rutina fue tomada como generalizacion de un ejemplo de jqwidget.
-        //          Ver la actualizaciones de gridManager.js para ver como llama a esta parte del codigo
-        //          jqwidget envia sus propios parametros, por ello, en esta seccion
-        //          los parametros estan prefidos por "__"
-        //
-        global $CCConnectionSettings;
-        // Parametros
-        // __transaction_type   = es el mismo parametro transactiontype
-        // __table_name         = nombre de la tabla a la cual se efetuara la operacion
-        // __operation_type     = insert,update,delete default=none;
-        // __pk                 = lista de los campos que confran la clave primaria , default=none, es decir no especificada);
-        // __row_id             = en el caso de ORACLE, el ROWID en char
-        //                      , en caso de MySQL, es el nombre de la columna autoincrement
-        //                      , default=null, es decir no especificada
-
-        // tambien vienen por parametros con el nombre de la columna precedida por "__" los valores correspondientes al primary key, o con el nombre de la columna autoincrement
-        $exclude_from_data = ["boundindex", "uniqueid", "visibleindex", "uid"];
-        // "boundindex", "uniqueid", "visibleindex", "uid" son parametros que envia jqxwidget
-        // en estos casos nos aseguramos de eliminar ou omitirlo de la lista de parametros
-        $table_name         = CCGetParam("__table_name", "none");
+                                                                                global $CCConnectionSettings;
+                                                                
+                $exclude_from_data = ["boundindex", "uniqueid", "visibleindex", "uid"];
+                        $table_name         = CCGetParam("__table_name", "none");
         $operation_type     = CCGetParam("__operation_type", "none");
         $pk                 = CCGetParam("__pk", "none");
-        $row_id             = CCGetParam("__row_id", ""); // Solo puede haber una
-        //$ai                 = CCGetParam("__autoincrement", ""); // Solo puede haber una
-
-        // YA ESTA COMPLETADO EN EL CUERPO PRINCIAL
-        #$sourceName = CCGetParam("sourcename", "default");
-
-        // GET DATASOURCE PARAMETERS
-        #$datasource = file_get_contents("../textdb/" . $sourceName . ".sources.json.php");
-        #$datasource = json_decode($datasource, true);
-        #$CCConnectionSettings[$sourceName] = $datasource;
-        // YA ESTABLECIDA EN LA global
-
+        $row_id             = CCGetParam("__row_id", "");         
+                
+                                        
         $error = false;
         $lastkey = "";
         $lastSQL = "";
         $db = new clsDBdefault();
-        #echo $SQL."<br>";
-
-        # Parámetros application/x-www-form-urlencoded No ordenar
-        # __table_name
-        # __transaction_type
-        # Eliminar estosssss
-        #   boundindex 9
-        #   uniqueid 3020-18-16-21-302716
-        #   visibleindex 9
-
+        
+                                                        
         $DATA = array();
-        //
-        // crea un arreglo refencial dende la posicion de la tabla debe
-        // coincidir con una columna de la tabla, y el valor, es el valor
-        // esperado para esa columna
-        //
-        foreach ($_POST as $v => $val) {
+                                                foreach ($_POST as $v => $val) {
             if (!in_array($v, $exclude_from_data) and !(substr($v, 0, 2) == "__")) {
                 $DATA[$v] = $val;
-                #echo "$v => $val<br>";
-            }
+                            }
         }
 
-        // crea un arreglo con la lista de los columnas que conforman la clave primaria (si la tiene)
-        // y que se espera que vino por parametro como una lista de colimnas separadas por ","
-        $PK = array();
+                        $PK = array();
         $pk = explode(',', $pk);
         foreach ($pk as $v) {
             $PK[] = $v;
@@ -382,13 +266,10 @@ class clsCore {
                     $column_list .= ($column_list ? "," : "") . $v . ' = ' . CCToSQL($val, ccsText);
                 }
             }
-            #echo "<br>".$column_list."<br>";
-
-            #echo "<br>".$where_condition."<br>";
-            $SQL = str_replace('{column_list}', $column_list, $SQL);
+            
+                        $SQL = str_replace('{column_list}', $column_list, $SQL);
             $SQL = str_replace('{where_condition}', $where_condition, $SQL);
-            //echo "<br>".$SQL."<br>"; die;
-        } else if ($operation_type == "insert") {
+                    } else if ($operation_type == "insert") {
             $SQL = "insert into $table_name ({column_list}) values ({val_list})";
             $column_list = "";
             $val_list = "";
@@ -398,8 +279,7 @@ class clsCore {
                     $val_list .= ($val_list ? "," : "") . CCToSQL($DATA[$v], ccsText);
                 }
             }
-            #echo "<br>".$column_list."<br>";
-
+            
             $SQL = str_replace('{column_list}', $column_list, $SQL);
             $SQL = str_replace('{val_list}', $val_list, $SQL);
 
@@ -433,11 +313,8 @@ class clsCore {
         }
 
         if (!$error) {
-            // Ececute Operation
-            if (strtoupper($db->Type) == "ORACLE" and $operation_type == "insert") {
-                //
-                // Insert y control para devolver el ultimo ROW_ID de la tabla
-                $db->bind('lastkey', '', 4000, SQLT_CHR);
+                        if (strtoupper($db->Type) == "ORACLE" and $operation_type == "insert") {
+                                                $db->bind('lastkey', '', 4000, SQLT_CHR);
                 $db->query($SQL);
                 $lastkey = $db->Provider->Record['lastkey'];
             } else {
@@ -453,20 +330,12 @@ class clsCore {
                         $lastkey = CCDLookUp("LAST_INSERT_ID()", "", "", $db);
                     }
                     if (strtoupper($db->Type) == "ORACLE") {
-                        // Crear funcion basado en ROW_ID
-                        //$lastkey = CCDLookUp("LAST_INSERT_ID()", "", "", $db);
-                    }
+                                                                    }
                 }
                 if (in_array($operation_type, ["insert", "update", "delete"]) && !$error) {
                     $affected_rows = $db->affected_rows();
-                    ##
-                    ## NOTA:
-                    ## Se asume que las operaciones de update y delete debe afectar exactamente a una fila, cero o mas de una es un error
-                    ##
-                    if ($affected_rows != 1) {
-                        ##$e = $db->Link_ID->get_warnings();
-                        ##var_dump($db);
-                        $db->Error['code'] = -20098;
+                                                                                                    if ($affected_rows != 1) {
+                                                                        $db->Error['code'] = -20098;
                         $db->Error['message'] = "warning ($affected_rows) rows affected when expected exactly 1";
                         $error = $db->Error['message'];
                     }
@@ -477,86 +346,51 @@ class clsCore {
             $lastSQL = json_encode($lastSQL);
         }
 
-        // TODO: LLAMAR A returnJSON
-        if ($error) {
-            $json = '{"ERROR" : {"CODE":"' . $db->Error['code'] . '", "MESSAGE" : "' . $db->Error['message'] . '", "SQL":"' . htmlentities($lastSQL) . '"}}';
-        } else {
-            //$json = '{"ERROR" : {"CODE":"0", "MESSAGE" : "SUCCESS", "LAST_INSERT_ID":"'.$lastkey.'", "AFFECTED_ROWS":"'.$affected_rows.'", "SQL":"'.$db->LastSQL.'"}}';
-            //$json = '{"ERROR" : {"CODE":"0", "MESSAGE" : "SUCCESS", "LAST_INSERT_ID":"' . $lastkey . '", "AFFECTED_ROWS":"' . $affected_rows . '", "SQL":"' . $lastSQL . '"}}';
-            $json = '{"ERROR" : {"CODE":"0", "MESSAGE" : "SUCCESS"}'
-             .', "INFO: { "LAST_INSERT_ID":"' . $lastkey . '", "AFFECTED_ROWS":"' . $affected_rows . '"}}';
+                if ($error) {
+            error_manager($db->Error['message'], $db->Error['code']);
+                    } else {
+                                    $json = '{'
+             .'"INFO: { "LAST_INSERT_ID":"' . $lastkey . '", "AFFECTED_ROWS":"' . $affected_rows . '"}'
+             .'}';
             }
         echo $json;
         exit;
     }
-    /*
-     * Extrae de un archivo los comentarios con tags y los trata como contenido SQL
-     * EJ:
-     <PLSQL ANONYMOUS CASO1>
-        IF :PARAMETER.RETIRADO='S' THEN
-            UPDATE SOLICITUD
-            SET    STATUS='T'
-            WHERE  ID_SOLICITUD=:bLOQUE.NRO_SOL;
-        END IF;
-        <END>
-
-     * EL HEADER
-     *  PLSQL = tipo
-     *  ANOMYMOUS = scope
-     *  CASO1 = name
-    */
+    
     public static function sqlSplitFromFile($currentfile = ""){
-        /*
-         * Lee el contenido de un archivo si no tiene parametros se lee a si mismo
-         */
+        
         if (!$currentfile) {
             $currentfile = RelativePath . PathToCurrentPage . FileName;
         }
         $file = $currentfile;
         $path = pathinfo($file);
         if ($path['dirname'] === '.') {
-            // Asumo el defecto.
-            // Defecto = RelativePath ./textsql/
-            $path['dirname'] = RelativePath . "/textsql/";
+                                    $path['dirname'] = RelativePath . "/textsql/";
         }
         if ($path['extension'] === 'sql') {
-            // Asumo el defecto.
-            // Defecto = RelativePath ./textsql/
-            //$path['filename'] .= '.'.$path['extension'];
-            $path['extension'] .= '.php';
+                                                $path['extension'] .= '.php';
         }
         if ($path['extension'] !== 'sql.php' or $path['extension'] !== 'php') {
-            // Asumo el defecto.
-            // Defecto = RelativePath ./textsql/
-            $path['filename'] .= '.'.$path['extension'];
+                                    $path['filename'] .= '.'.$path['extension'];
             $path['extension'] = 'sql.php';
         } else {
             $path['filename'] .= '.'.$path['extension'];
             $path['extension'] = 'sql.php';
         }
         $file =  $path['dirname'].$path['filename'] . '.'.$path['extension'];
-        #var_dump($file);
-        $text = file_get_contents($file);
-        /*
-         * Una vez leido el texto envia a la rutina que descompone los comentarios
-         */
-        #echo "\nReturn Value Parsed=\n";
-        return clsCore::sqlSplitFromStringWithTags($text);
-        //return clsCore::sqlSplitFromString($text);
-    }
+                $text = file_get_contents($file);
+        
+                return clsCore::sqlSplitFromStringWithTags($text);
+            }
 
     public static function sqlSplitFromString($text){
-        /*
-         * Recibe un texto (sin importar el contenido, y lo descompone en una lista dependiendo de tags dentro de comentarios tipo /*
-         */
-        //
-        $start_tag = "/*<";
+        
+                $start_tag = "/*<";
         $end_tag = ">*/";
         preg_match_all('#/\*\<(.*?)\>\*/#s', $text, $matches);
 
         foreach ($matches[0] as $i => $code) {
-            // Elimina los comentarios y el <END>*/
-            $codes[] = substr($code,2, strlen($code) - 9);
+                        $codes[] = substr($code,2, strlen($code) - 9);
         }
 
         if (count($codes) == 0) {
@@ -564,29 +398,14 @@ class clsCore {
         }
         foreach($codes as $ind => $code) {
             $head = substr($code, 1, strpos($code, '>')-1);
-            $body = trim(substr($code, strpos($code, ">")+1));//, strpos($code, '<')-(strpos($code, ">")+1)));
-            #echo "<br>\n";
-            #echo 'CODIGO '.$code."<BR>\n";
-            #echo "<br>HEAD $head<br>\n";
-            $s = strtoupper($head);
+            $body = trim(substr($code, strpos($code, ">")+1));                                                $s = strtoupper($head);
             $s = explode( ' ', $s);
-            #var_dump($s);
-            // 0 - LANGUAGE
-            // 1 - TYPE
-            //      WHEN 'QUERY'
-            //          2 - NAME
-            //      WHEN 'TRIGGER'
-            //          COMPLEX
-            // 2 - NAME
-
+                                                                                                
             $scope = array();
-            $scope["lang"] = $s[0]; #-- Lang ej: PLSQL
-            if (isset($s[1])) {
-                $scope["type"] = $s[1]; #-- tipo
-                if ($scope["type"] == 'TRIGGER') {
+            $scope["lang"] = $s[0];             if (isset($s[1])) {
+                $scope["type"] = $s[1];                 if ($scope["type"] == 'TRIGGER') {
                     $t = explode( ':', $s[2]);
-                    #var_dump($t);
-                    if (!isset($t[1])) {
+                                        if (!isset($t[1])) {
                         $scope["name"] = 'FORM';
                         $scope[3] = $s[3];
                         $name = $s[3]  ;
@@ -606,12 +425,10 @@ class clsCore {
                     }
                 } else if ($scope["type"] == 'ANONYMOUS') {
                     $scope["name"] = $s[2];
-                    #$scope[3] = $s[2];
-                    $name = $s[2] ;
+                                        $name = $s[2] ;
                 } else if ($scope["type"] == 'QUERY') {
                     $scope["name"] = $s[2];
-                    #$scope[3] = $s[2];
-                    $name = $s[2];
+                                        $name = $s[2];
                 } else if ($scope["type"] != 'ANONYMOUS') {
                     $scope["type"] = 'ANONYMOUS';
                     $scope["name"] = $s[1];
@@ -631,10 +448,7 @@ class clsCore {
             $plsqlParsed[$name]->bind = $arr;
 
         }
-        ##
-        ## AHORA EL ARRAY SCOPE TIENE TODOS LOS CODIGOS SQL
-        ##
-        return $plsqlParsed;
+                                return $plsqlParsed;
     }
 
     public static function normalize_tags($str, $tag)
@@ -643,16 +457,14 @@ class clsCore {
         if ($start === false) return $str;
         $len = strlen($tag)+1;
 
-        //var_dump($str);
-        $str = strtoupper(substr($str, $start, $len)) . substr($str, $len);
+                $str = strtoupper(substr($str, $start, $len)) . substr($str, $len);
 
         $start = strpos(strtoupper($str), '</'.strtoupper($tag));
         if ($start === false) return $str;
         $len = strlen($tag)+2;
 
         $str = substr($str, 0, strlen($str) - ($len+1)). strtoupper(substr($str, $start, $len+1));
-        //var_dump($str); die;
-        return $str;
+                return $str;
     }
 
     public static function checkXmlString($string) {
@@ -670,9 +482,7 @@ class clsCore {
         libxml_use_internal_errors(true);
         libxml_clear_errors();
         $xml = simplexml_load_string($string);
-        #echo $string."<br>\n";
-        #var_dump($xml);
-        if (count(libxml_get_errors())==0) {
+                        if (count(libxml_get_errors())==0) {
             return $xml;
         } else {
             return false;
@@ -680,46 +490,28 @@ class clsCore {
     }
 
     public static function sqlSplitFromStringWithTags($text, $tag='sql'){
-        /*
-         * Recibe un texto (sin importar el contenido, y lo descompone en una lista dependiendo de tags dentro de comentarios tipo /*
-         * el tag es <sql type= name= lang= scope=>sql command</sql>
-         * respetando el formato XML para los attributos
-         */
-        //
-
+        
+        
         $plsqlParsed = array();
-        // Primero,.. se obiene un ARRAY de texto encerrado entre comentarios /*....*/
-        // los que cumplan con el tag <sql>...</sql> seran considerados comandos sql
-        //
-        $start_tag = "/*";
+                                $start_tag = "/*";
         $end_tag = "*/";
         preg_match_all('#/\*(.*?)\*/#s', $text, $matches);
-        // hasta aqui, el array 0 debe tener el contenidos de tos los comentarios
-        //
-        #var_dump($matches);
-
+                        
         foreach ($matches[1] as $i => $code) {
-            // 1 Estandarizar los tags entre mayuscula y minusculas SQL, Sql, sQl,sqL ...todos a sql
-            $string = clsCore::normalize_tags(trim($code), $tag);
-            //var_dump($string); die;
-
-            // 2 tomar el tag con propiedades separadas por " " blancos
-            $xml = clsCore::checkXmlString($string);
-            //var_dump($xml); die;
-
+                        $string = clsCore::normalize_tags(trim($code), $tag);
+            
+                        $xml = clsCore::checkXmlString($string);
+            
             if ($xml) {
                 $json = json_encode($xml);
-                // normaliza los nombres de los atributos
-                $json = clsCore::normalizeJSONObjectAttrName($json);
-                // Ahora tengo un json (string) del contenido
-                $obj = json_decode($json);
+                                $json = clsCore::normalizeJSONObjectAttrName($json);
+                                $obj = json_decode($json);
                 $name = (isset($obj->{"@attributes"}->name) ? strtoupper($obj->{"@attributes"}->name) : "ANONYMOUS");
                 $type = (isset($obj->{"@attributes"}->type) ? strtoupper($obj->{"@attributes"}->type) : "QUERY");
                 $lang = (isset($obj->{"@attributes"}->lang) ? strtoupper($obj->{"@attributes"}->lang) : "SQL");
                 $scope = (isset($obj->{"@attributes"}->scope) ? $obj->{"@attributes"}->scope : "");
                 $body = $obj->{'0'};
-                // Ahora tengo un objeto del contenido
-                $plsqlParsed[$name]= new stdClass();
+                                $plsqlParsed[$name]= new stdClass();
                 $plsqlParsed[$name]->scope = $scope;
                 $plsqlParsed[$name]->body = $body;
                 $plsqlParsed[$name]->type = $type;
@@ -732,62 +524,35 @@ class clsCore {
                     $plsqlParsed[$name]->bind = $arr;
                 }
             }
-            //$start_tag = "/*";
-            //$end_tag = "*/";
-            //preg_match_all('#/\*\<(.*?)\>\*/#s', $text, $matches);
-            //$codes[] = substr($code,2, strlen($code) - 9);
-        }
+                                                        }
 
         if (count($plsqlParsed) == 0) {
             error_manager('sqlSplitFromStringWithTags: No codes found on file parsing..', -20102);
         }
 
-        //var_dump($plsqlParsed); die;
-        ##
-        ## AHORA EL ARRAY SCOPE TIENE TODOS LOS CODIGOS SQL
-        ##
-        return $plsqlParsed;
+                                        return $plsqlParsed;
     }
 
     public static function getSqlParsed($sqlParsed, $name = '1'){
-        // $sqlParsed es el resultado de obtener uno o mas SQL desde un archivo a traves de sqlSplitFromFile()
-        // Retorna el primer SQL
-        if ($name === '1') {
-            // solo retorna el primero
-            foreach ($sqlParsed as $name => $data) {
+                        if ($name === '1') {
+                        foreach ($sqlParsed as $name => $data) {
                 $SQL = $data->body;
-                return $SQL; //una sola vez, es decir si hay varios queries solo toma el primero
-            }
+                return $SQL;             }
         } else {
-            // retorna el que coincida con el nombre
-            $name = strtoupper($name);
+                        $name = strtoupper($name);
             if (isset($sqlParsed[$name])) {
                 return $sqlParsed[$name]->body;
             }
         }
-        // $sqlParsed es el resultado de obtener uno o mas SQL desde un archivo a traves de sqlSplitFromFile()
-        // Retorna el primer SQL
-        error_manager("getSqlParsed requested Parsed SQL $name not found", -20101) ;
+                        error_manager("getSqlParsed requested Parsed SQL $name not found", -20101) ;
     }
 
     public static function sqlBindVariables($currenString = "", $bind) {
-        //
-        // $bind es un objeto PHP de parejas de valores {"variable" : "value", ...}
-        // Establece los valores de parametros antes de la ejecucion del SQL ,
-        //      para ORACLE usa el BIND
-        //      para MySql usa el set @var =
-        // retorna el SQL con los nombres de variables estandarizados
-
-        // TODO: EN PRUEBA Probar si genera un arreglo de variables que empiezan por ":" y que permita el CUALIFICADO
-        // por elemplo SYSTEM.variable
-        // TODO: todas las variables seran manejadas como MAYUSCULAS?
-        //
-
-        #global $plsqlParsed;
-        global $CCConnectionSettings;
+                                                
+                                
+                global $CCConnectionSettings;
         global $sourceName;
-        // Posibles Variables a binded
-        global $SYSTEM;
+                global $SYSTEM;
         global $GLOBALS;
         global $PARAMETERS;
         global $BINDED;
@@ -799,8 +564,7 @@ class clsCore {
 
         $currenString = trim($currenString);
 
-        // ESTO DEPENDE SOLO SI ES UNA TRANSACCIONAL, SI ES QUERY NO
-        if (false) {
+                if (false) {
             if (substr($currenString, strlen($currenString) - 1, 1) !== ";") {
                 $currenString = $currenString . ';';
             }
@@ -808,26 +572,13 @@ class clsCore {
 
         preg_match_all("/\\:\s*([a-zA-Z0-9_.]+)/ise", $currenString, $arr);
 
-        // --------------------------------------------------------------
-        // add to $bind values in $arr not in $bind
-        // Esto hace incapturable el hecho de que no se hayan enviado valores para una variable
-        // asumiendo el valor null
-        // hummmm
-        // --------------------------------------------------------------
-        // AQUI en este MOMENTO arr[1] contiene los nombres de variables que estan el SQL
-        // importarte GUARDARLO porque en caso de ORACLE solo se puede hacer bind que existan en el SQL
-        // de los contrario da ERROR
-        //
-        global $BINDED_IN_SQL;
+                                                                                        global $BINDED_IN_SQL;
         $BINDED_IN_SQL = $arr[1];
-        #echo "binded before "; print_r($bind);
-        #echo "arr before "; print_r($arr[1]);
-
+                
         foreach ($arr[1] as $i => $var) {
             $ok = false;
             foreach($bind as $j => $n) {
-                #echo "bind = $j arr = $var\n";
-                if ($j == $var) {
+                                if ($j == $var) {
                     $ok = true;
                     break;
                 }
@@ -837,14 +588,11 @@ class clsCore {
             }
         }
 
-        #echo "binded intermedio "; print_r($bind);
-        #echo "AL REVES\n";
-
+                
         foreach($bind as $j => $n) {
             $ok = false;
             foreach ($arr[1] as $i => $var) {
-                #echo "bind = $j arr = $var\n";
-                if ($j == $var) {
+                                if ($j == $var) {
                     $ok = true;
                     break;
                 }
@@ -853,15 +601,9 @@ class clsCore {
                 $arr[1][] = $j;
             }
         }
-        #echo "binded after "; print_r($bind);
-        #echo "arr after "; print_r($arr[1]);
-        // --------------------------------------------------------------
-
-        # 1) Convierte todos los nombres en mayuscula
-        # 2) si no esta cualificado, lo coloca en PARAMETERS
-
-        // SI, un parametro no esta cualificado, colocalo en la estructura de PARAMETERS
-        foreach ($arr[1] as $i => $name) {
+                        
+                
+                foreach ($arr[1] as $i => $name) {
             $new_name = strtoupper($name);
             if (strpos($new_name, '.') === false) {
                 $new_name = 'PARAMETERS.' . $new_name;
@@ -874,11 +616,7 @@ class clsCore {
             $arr = array_unique($arr[1]);
         } else $arr = array();
 
-        // TODO: CON EL BIND HACER LO MISMO pero crear un estructura con el nombre original
-        //  , taratar de dertminar el tipo de datos
-        //  , el tipo de datos que sea igual al de CCToSql
-        // Hacer la sutitucion con CCToSql
-
+                                
         $PARAMETERS = new stdClass();
         foreach ($bind as $i => $val) {
             $new_name = strtoupper($i);
@@ -897,8 +635,7 @@ class clsCore {
                     $tt = ccsFloat;
                     break;
                 case 'string' :
-                    // FORMATO ESTANDAR DE FECHA ESTABLECIDO 'yyyy-mm-dd HH-mi-ss'
-                    if (isDateTime($val, 'Y-m-d H:i:s') or isDateTime($val, 'Y-m-d')) {
+                                        if (isDateTime($val, 'Y-m-d H:i:s') or isDateTime($val, 'Y-m-d')) {
                         $tt = ccsDate;
                     } else {
                         $tt = ccsText;
@@ -907,46 +644,31 @@ class clsCore {
                 default :
                     $tt = ccsText;
             }
-            $PARAMETERS->{$new_name}->type = $tt; // retorna el tipo CCS
-        }
+            $PARAMETERS->{$new_name}->type = $tt;         }
 
         $BINDED = $arr;
 
-        #echo "binded after after "; print_r($BINDED);
-
+        
         if ($DB_TYPE == "MySQL") {
             foreach ($arr as $i => $toBind) {
-                // $tobind esta en la forma
-                // 1) PARAMETERS.VARIABLE y referencia a $PARAMETERS->{$toBind}->value
-                // 2) SYSTEM.VARIABLE y referencia a SYSTEM->{$toBind} is the value
-                // 3) GLOBAL.VARIABLE y referencia a GLOBALS->{$toBind} is rhe value
-
+                                                                
                 $param = trim(str_replace(',', '', $toBind));
                 $mysql_param = str_replace('.', '_', $param);
                 $currenString = str_replace(':' . $param, '@' . $mysql_param, $currenString);
             }
         } else if ($DB_TYPE == "Oracle") {
             foreach ($arr as $i => $toBind) {
-                // $tobind esta en la forma
-                // 1) PARAMETERS.VARIABLE y referencia a $PARAMETERS->{$toBind}->value
-                // 2) SYSTEM.VARIABLE y referencia a SYSTEM->{$toBind} is the value
-                // 3) GLOBAL.VARIABLE y referencia a GLOBALS->{$toBind} is rhe value
-
+                                                                
                 $param = trim(str_replace(',', '', $toBind));
-                #$oracle_param = strtolower(substr($param,strpos($param,'.')+1, 1000));
-                $oracle_param = str_replace('.','_',$param);
-                #$oracle_param = str_replace('.', '_', $param);
-                $currenString = str_replace(':' . $param, ':' . $oracle_param, $currenString);
+                                $oracle_param = str_replace('.','_',$param);
+                                $currenString = str_replace(':' . $param, ':' . $oracle_param, $currenString);
             }
         }
         return $currenString;
     }
 
     public static function setBindValues(& $db) {
-        // BIND o setea los valores para los parametros del SQL si tiene
-        // En caso de ORTACLE via bind
-        // en caso de mysql via @variable
-        global $CCConnectionSettings;
+                                global $CCConnectionSettings;
         global $sourceName;
 
         global $SYSTEM;
@@ -955,40 +677,18 @@ class clsCore {
         global $BINDED;
 
         $DB_TYPE = $CCConnectionSettings[$sourceName]["Type"];
-        // Hace instruccion BIND directamente cuando es Oracle y la tecnica de SET @var cuando es MySQL
-        // $arr tiene os parametros utilizados dentro del SQL
-        // $PARAMETERS tiene los valores enviados como parametros
-        // parametros SYSTEM deben estar en un objeto SYSTEM
-        // parametros GLOBAL deben estar en un objeto GLOBAL
-        // parametros PARAMETERS deben estar en $PARAMETERS
-
-        // $db = new clsDBdefault();
-
-        // TODO por ahora dentro del SQL quedaron las variables (o parametros) con el nombre ESTRUCTURA.NOMMBRE_VARIABLE
-        // cambiar por referencias :0, :1.. donde 0,1,... son laposicion del arreglo $arr
-        //
-
+                                                
+        
+                        
 
         if ($DB_TYPE == "Oracle") {
-            //
-            // NOTA IMPORTANTE: si se trata de hacer un bind de una variable que no exista el SQL
-            //                  Resultara en un error
-
-            // Antes $BINDED mantenia solamente las variables del SQL y se cambio para que tuvieran todas
-            // SE requiere otra esctructura o un indicador que diga que ESTA el el SQL
-            //
-
-            // Existe un limite para el tamano del nombre de la variable BINDED, por loq que se recomendara no mayor a 32 caracteres
-
-            //
-            // Debo asegurarme que solo haga BIND de las variables que esten referenciadas en el SQL
-            // para ello tuve que crear un nuevo arreglo $BINDED_IN_SQL que igue las mismas reglas que $BINDED, pero solo incluye las que esten en el SQL
-            //
-            global $BINDED_IN_SQL;
+                                    
+                                    
+            
+                                                            global $BINDED_IN_SQL;
 
             foreach ($BINDED_IN_SQL as $i => $inSQL) {
-                // Asigna a la estructura de $BINDED$ a la variable $toBind cuando el "nombre_original" es igual a $inSQL
-                $toBind = false;
+                                $toBind = false;
                 foreach ($BINDED as $i => $Bind)   {
                     if (isset($PARAMETERS->{$Bind})) {
                         $varname = $PARAMETERS->{$Bind}->original_name;
@@ -1001,18 +701,12 @@ class clsCore {
                 }
 
 
-                // $toBind ahora esta en la forma
-                // 1) PARAMETERS.VARIABLE y referencia a $PARAMETERS->{$toBind}->value
-                // 2) SYSTEM.VARIABLE y referencia a SYSTEM->{$toBind} is the value
-                // 3) GLOBAL.VARIABLE y referencia a GLOBALS->{$toBind} is rhe value
-
+                                                                
                 $param  = trim(str_replace(',', '', $toBind));
                 $varname = substr($param,strpos($param,'.')+1, 1000);
-                #echo "setBindValues Check value for $varname\n";
-                $value =
+                                $value =
                     (
-                    #strpos($toBind, 'PARAMETERS.') !== false ? $PARAMETERS->{$toBind}->value
-                    strpos($toBind, 'PARAMETERS.') !== false ? (isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value : error_manager('Unbinded PARAMETER variable "' . $varname . '"', 20005))
+                                        strpos($toBind, 'PARAMETERS.') !== false ? (isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value : error_manager('Unbinded PARAMETER variable "' . $varname . '"', 20005))
                         : (strpos($toBind, 'SYSTEM.') !== false ? (isset($SYSTEM->{$varname}) ? : error_manager("Unbinded SYSTEM variable \"" . $varname . "\"", 20004))
                         : (strpos($toBind, 'GLOBAL.') !== false ? $GLOBALS->{$varname}
                             : isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value
@@ -1020,24 +714,15 @@ class clsCore {
                         )));
                 $oracle_param = str_replace('.','_',$param);
                 $db->bind($oracle_param, $value , 4000, SQLT_CHR);
-                #echo " DONE\n\n";
-            }
+                            }
             if ($db->Errors->toString()) {
                 error_manager('Error binding values "' . $db->Errors->toString(), 20003);
             }
-            #echo "setBindValues TODO OK returning\n";
-            return;
-            // FIN BIND TIPO ORACLE
-        } else if ($DB_TYPE == "MySQL"){
+                        return;
+                    } else if ($DB_TYPE == "MySQL"){
 
-            //var_dump($BINDED);
-            //var_dump($PARAMETERS);
-            foreach ($BINDED as $i => $toBind) {
-                // $tobind esta en la forma
-                // 1) PARAMETERS.VARIABLE y referencia a $PARAMETERS->{$toBind}->value
-                // 2) SYSTEM.VARIABLE y referencia a SYSTEM->{$toBind} is the value
-                // 3) GLOBAL.VARIABLE y referencia a GLOBALS->{$toBind} is rhe value
-
+                                    foreach ($BINDED as $i => $toBind) {
+                                                                
                 $param      = trim(str_replace(',', '', $toBind));
                 $varname    = substr($param,strpos($param,'.')+1, 1000);
                 $value      =
@@ -1046,41 +731,31 @@ class clsCore {
                         : (strpos($toBind, 'SYSTEM.') !== false ? (isset($SYSTEM->{$varname}) ? : error_manager('Undefined SYSTEM variable "' . $varname . '"', 20004))
                         : (strpos($toBind, 'GLOBAL.') !== false ? $GLOBALS->{$varname}
                             : isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value
-                            //: error_manager('Unbinded variable "' . $PARAMETERS->{$varname}->original_name . '"', 20003)
-                            : error_manager('Unbinded variable "' . (isset($PARAMETERS->{$varname}) ? $PARAMETERS->{$varname}->original_name : $toBind) . '"', 20003)
+                                                        : error_manager('Unbinded variable "' . (isset($PARAMETERS->{$varname}) ? $PARAMETERS->{$varname}->original_name : $toBind) . '"', 20003)
                         )));
                 $mysql_param = str_replace('.','_',$param);
                 $db->query("set @". $mysql_param ." = " . CCToSQL($value, ccsText).';');
-                //var_dump($db);
-                #echo ";<BR>\n";
-
+                                
                 if ($db->Errors->toString()) {
                     error_manager('Error binding values "' . $db->Errors->toString(), 20003);
                 }
             }
             return;
-            // FIN BIND TIPO MySQL
-
+            
         }
         error_manager('Binding values for DataBase type "' . $DB_TYPE . ", not implemented yet.", 20003);
     }
 
     public static function getBindValues(& $db)
     {
-        // Actualiza los valores en la estructura PARAMETERS
-
+        
         $DB_TYPE = $db->Type;
         global $PARAMETERS;
 
         if ($DB_TYPE == "Oracle") {
 
-            #
-            # GET BINDS
-            #
-            // SI LA SENTENCIA EJECUTADA ES ORACLE los valores BIND deben haber sido recuperados justo despues
-
-            // SOLO MODIFICA LOS VALORES DE LA ESTRUCTURA PARAMETERS. NO SE PUEDEN MODIFICAR POR SELECT .. INTO ... NI SYSTEM ni GLOBAL
-            foreach ($PARAMETERS as $toBind => $obj) {
+                                                
+                        foreach ($PARAMETERS as $toBind => $obj) {
                 $param = trim(str_replace(',', '', $toBind));
                 $oracle_param = str_replace('.', '_', $param);
                 if (isset($db->Record[$oracle_param])) {
@@ -1094,11 +769,8 @@ class clsCore {
             }
         }
         else if ($DB_TYPE == "MySQL") {
-            // SI LA SENTENCIA EJECUTADA ES MY SQL los valores BIND deben haber sido recuperados justo despues
-            // Recupera los valores de las @parameters
-            $SQL = '';
-            //foreach ($BINDED as $i => $toBind) {
-            global $PARAMETERS;
+                                    $SQL = '';
+                        global $PARAMETERS;
             foreach ($PARAMETERS as $toBind => $obj) {
 
                 $param = trim(str_replace(',', '', $toBind));
@@ -1107,47 +779,24 @@ class clsCore {
 
             }
 
-            #echo $SQL;
-            $db->query($SQL);
+                        $db->query($SQL);
             if ($db->Errors->ToString()) {
                 error_manager($db->Errors->ToString(), -20101);
             }
 
             $db->next_record();
 
-            // SET NEW VALUES to $PARAMETERS
-            foreach($db->Record as $toBind => $value) {
-                #if (isset($PARAMETERS[strtoupper($name)])) {
-                if (!is_numeric($toBind)) {
-                    #echo  "$toBind = $value\n";
-                    $PARAMETERS->{strtoupper($toBind)}->value = $value;
+                        foreach($db->Record as $toBind => $value) {
+                                if (!is_numeric($toBind)) {
+                                        $PARAMETERS->{strtoupper($toBind)}->value = $value;
                 }
             }
         }
     }
 
     public static function getBindResult(& $db) {
-        //
-        // NOTA: los valeres BINDED puede cambiar solo bajo de ciertas circustancias (por ahora) y solamente involucra el array $PARAMETERS
-        //       no debe afectar ni a $SYSTEM ni a $GLOBAL
-        //      ejemplo:
-        //      un SELECT ... INTO ... (En oracle se auto implementa como un BEGIN .. SELECT ... INTO; END; y en Mysql es una sentencia SQL aceptada
-        //      un blque anonimo de ORACLE es decir una sentencia SQL con BEGIN ... END; donde los parametros (prefijados con ":" ) pueden tener asignacion de valores
-        //      un llamado de procedimiento o funcion donde internamete cambia loa valores de parametros (prefijados con ":" )
-        //
-
-        // Partiendo del arreglo $PARAMETERS crear un objeto con los valores
-        // este arreglo tiene como indice la referencia del parametro o variable ":" es decir la variable BINDED de la siguiente manera
-        // si la variable BINDED no esta cualificada, se auto cualifica con PARAMETERS,
-        //      ejemplo: el SQL referencia una variable :variable_name, el indice en $PARAMETERES es "PARAMETERS.variable_name"
-        // si la variable BINDED esta cualificada, utiliza la CUALIFICACION, ejemplo "NOMBRE.variable_name"
-        //      ejemplo: el SQL referencia una variable :nombre.variable_name, el indice en $PARAMETERES es "NOMBRE.variable_name"
-        //
-        // el resultado debe ser un arregloglo que sea
-        // ["PARAMETERS"]->original_name = values
-        // ["OTHERS"]->original_sub_cualified_name = values
-        //
-        global $CCConnectionSettings;
+                                                                
+                                                                                                global $CCConnectionSettings;
         global $sourceName;
 
         global $SYSTEM;
@@ -1158,27 +807,18 @@ class clsCore {
 
         $DB_TYPE = $CCConnectionSettings[$sourceName]["Type"];
 
-        // SI LA SENTENCIA EJECUTADA ES ORACLE los valores BIND deben haber sido recuperados justo despues
-
+        
         $result = new stdClass();
 
-        // Nota importante.
-        // se asume que los nombre de variables binded puede tener a lo sumo una sola subestructura por ejemplo :bloque.variable.
-        // no puede ser por jemeplo :bloque.variable.otronombre
-        foreach($PARAMETERS as $var => $obj) {
-            #echo " $var \n";//print_r($obj);echo "\n";
-
+                                foreach($PARAMETERS as $var => $obj) {
+            
             $x = pathinfo($var);
             $objName = $x['filename'];
             $varName = $x['extension'];
-            #echo " Estructura = $objName variable = $varName \n";//print_r($obj);echo "\n";
-            #var_dump($obj);
-            $x = pathinfo($obj->original_name);
+                                    $x = pathinfo($obj->original_name);
             $objOriginalName = isset($x['extension']) ? $x['filename'] : "";
             $varOriginalName = isset($x['extension']) ? $x['extension'] : $x['filename'];;
-            #echo " Original Estructura = $objOriginalName variable = $varOriginalName \n";//print_r($obj);echo "\n";
-            //var_dump($x);
-            if (!$objOriginalName) {
+                                    if (!$objOriginalName) {
                 $result->{$varOriginalName} = $obj->value;
             } else {
                 $result->{$objOriginalName} = isset($result->{$objOriginalName}) ? $result->{$objOriginalName} : new stdClass();
@@ -1193,14 +833,7 @@ class clsDBdefault extends DB_Adapter
 {
     function __construct($user = false, $password = false)
     {
-        $this->clsDBdefault($user, $password);
-    }
-
-    function clsDBdefault($user = false, $password = false)
-    {
-        #var_dump($user);
-        #var_dump($password);
-        global $CCConnectionSettings;
+                        global $CCConnectionSettings;
         global $sourceName;
         $this->SetProvider($CCConnectionSettings[$sourceName]);
         if ($user) {
@@ -1210,14 +843,21 @@ class clsDBdefault extends DB_Adapter
         if ($password) {
             $this->Provider->DBPassword = $password;
             $this->DBPassword = $password;
-            #var_dump($this);
-        }
-        $this->Initialize();
+                    }
+                $this->Initialize();
+        
+
     }
+
+    function clsDBdefault($user = false, $password = false)
+    {
+
+                self::__construct($user, $password);
+            }
 
     function Initialize()
     {
-        global $CCConnectionSettings;
+                global $CCConnectionSettings;
         global $sourceName;
         parent::Initialize();
         $this->DateLeftDelimiter  = "\'";
@@ -1229,14 +869,12 @@ class clsDBdefault extends DB_Adapter
 
     function OptimizeSQL($SQL)
     {
-        // TODO: es importante limitar el resultado, un resultado de mas de 10.000 linea pudiera traer problema con el buffer de PHP y enviar un resultado parcial e Invalido
-        if (strtoupper($this->PageSize) == 'ALL') return $SQL;
+                if (strtoupper($this->PageSize) == 'ALL') return $SQL;
         $PageSize = (int) $this->PageSize;
         if (!$PageSize) return $SQL;
         $Page = $this->AbsolutePage ? (int) $this->AbsolutePage : 1;
 
-        ## En caso de Oracle
-
+        
         if ($this->Type == "Oracle") {
             $SQL = "SELECT a.*, rownum a_count_rows FROM (".$SQL.") a where rownum <= ".(($Page) * $PageSize);
             $SQL = "SELECT * from (".$SQL.") where a_count_rows > ".(($Page - 1) * $PageSize)."";
@@ -1244,196 +882,67 @@ class clsDBdefault extends DB_Adapter
         } else if ($this->Type == "MySql" or $this->Type == "MySQL") {
             if (strcmp($this->RecordsCount, "CCS not counted")) {
                 $SQL = "SELECT * FROM (".$SQL.") a ". (" LIMIT " . (($Page - 1) * $PageSize) . "," . $PageSize);
-                #$SQL =  (" LIMIT " . (($Page - 1) * $PageSize) . "," . $PageSize);
-                #$SQL .= (" LIMIT " . ((($Page - 1) * $PageSize) + 1) . "," . $PageSize);
-            } else {
+                                            } else {
                 $SQL = "SELECT * FROM (".$SQL.") a ". (" LIMIT " . (($Page - 1) * $PageSize) . "," . ($PageSize + 1));
-                #$SQL .= (" LIMIT " . (($Page - 1) * $PageSize) . "," . ($PageSize + 1));
-            }
+                            }
         }
         return $SQL;
     }
 }
 
 
-class clsResultDataSource extends clsDBdefault {
 
-//DataSource Variables
-    public $Parent = "";
-    public $CCSEvents = "";
-    public $CCSEventResult;
-    public $ErrorBlock;
-    public $CmdExecution;
-
-    public $CountSQL;
-    public $wp;
-    public $Query;
-
-
-    // Datasource fields
-
-//End DataSource Variables
-
-//DataSourceClass_Initialize Event
-    function __construct(& $Parent)
-    {
-        clsResultDataSource($Parent);
-    }
-
-    function clsResultDataSource(& $Parent)
-    {
-        $this->Parent = & $Parent;
-        $this->ErrorBlock = "Grid Result";
-        $this->Initialize();
-
-        # metadata(), construye la lista de campos que tiene el select
-        $Parent->Metadata = metadata($this);
-
-        foreach($Parent->Metadata->colsbyname as $col => $prop) {
-            $this->{$col} = new clsField($col, $prop->type, ($prop->type == ccsDate ? $this->DateFormat : ""));
-        }
-    }
-//End DataSourceClass_Initialize Event
-
-//SetOrder Method
-    function SetOrder($SorterName, $SorterDirection)
-    {
-        $this->Order = trim("$SorterName $SorterDirection");
-        $this->Order = CCGetOrder($this->Order, $SorterName, $SorterDirection, "");
-    }
-//End SetOrder Method
-
-//Prepare Method
-    function Prepare()
-    {
-        global $CCSLocales;
-        global $DefaultDateFormat;
-    }
-//End Prepare Method
-
-//Open Method
-    function Open()
-    {
-        global $transactiontype;
-        // TODO : CHECK
-        // TODO : 1) LIMIT no esta permitido en el SELECT el LIMIT se construye por los parametros PAGE y PAGESIZE
-        // 2) SOLO SENTENCIAS SELECT son prmitidas
-        // trigger $this->CCSEventResult = CCGetEvent($this->CCSEvents, "BeforeBuildSelect", $this->Parent);
-        $this->SQL = $this->Parent->Query ." {SQL_Where} {SQL_OrderBy}";
-
-        //clsCore::validateSqlStatement($this->SQL, $transactiontype );
-
-        $this->CountSQL = "SELECT COUNT(*) from (\n\n" . $this->Parent->Query .") aszalst";
-        // trigger $this->CCSEventResult = CCGetEvent($this->CCSEvents, "BeforeExecuteSelect", $this->Parent);
-        if ($this->CountSQL)
-            $this->RecordsCount = CCGetDBValue(CCBuildSQL($this->CountSQL, $this->Where, ""), $this);
-        else
-            $this->RecordsCount = "CCS not counted";
-        #echo $this->SQL." ".$this->Where." ".$this->Order;exit;
-        #echo $this->OptimizeSQL(CCBuildSQL($this->SQL, $this->Where, $this->Order));
-        $this->query($this->OptimizeSQL(CCBuildSQL($this->SQL, $this->Where, $this->Order)));
-        // trigger $this->CCSEventResult = CCGetEvent($this->CCSEvents, "AfterExecuteSelect", $this->Parent);
-    }
-//End Open Method
-
-//SetValues Method
-    function SetValues()
-    {
-        foreach($this->Parent->Metadata->colsbyname as $col => $prop) {
-            $this->{$col}->SetDBValue(trim($this->f($col)));
-            #echo "<br> $col = ".$this->{$col}->GetDBValue();
-        }
-    }
-//End SetValues Method
-}
-
-/// CLASES Y MANEJO //////////////////////////////////////////////
 
 class clsSqlResult {
 
-//Variables
 
-    // Public variables
-    #public $ComponentType = "Grid";
-    #public $ComponentName;
-    public $Metadata;
+                public $Metadata;
     public $Query;
-    #public $Visible;
-    public $Errors;
-    #public $ErrorBlock;
-    public $ds;
+        public $Errors;
+        public $ds;
     public $DataSource;
     public $PageSize;
-    #public $IsEmpty;
-    #public $ForceIteration = false;
-    public $HasRecord = false;
+            public $HasRecord = false;
     public $SorterName = "";
     public $SorterDirection = "";
     public $PageNumber;
     public $RowNumber;
-    #public $ControlsVisible = array();
-
-    #public $CCSEvents = "";
-    #public $CCSEventResult;
-
+    
+        
     public $RelativePath = "";
-    #public $Attributes;
+    
+            
 
-    // Grid Controls
-    #public $StaticControls;
-    #public $RowControls;
-//End Variables
-
-//Class_Initialize Event
-
-    function __construct($RelativePath, & $Parent, $Query, $WhereCondition, $SorterName, $SorterDirection) {
-        #### elimin global $FileName;
-        global $CCSLocales;
+    function __construct($RelativePath
+                , $Query, $WhereCondition, $SorterName, $SorterDirection) {
+                global $CCSLocales;
         global $DefaultDateFormat;
 
-        #$this->ComponentName = "Result";
-        #$this->Visible = True;
-        $this->Records = array();
-        $this->Parent = & $Parent;
-        $this->RelativePath = $RelativePath;
+                        $this->Records = array();
+                $this->RelativePath = $RelativePath;
         $this->Errors = new clsErrors();
         $this->ErrorBlock = "Result";
-        #$this->Attributes = new clsAttributes($this->ComponentName . ":");
-
-        ## ES IMPORTANTE MANEJAR EL SQL SEPARANDO EL SELECT + WHERE Y EL ORDER BY.
-        ## AQUI ASUMINOS QUE NO HAY ORDER BY PUES DEBEMOS USAR UN LIMIT. SINO QUITARLO PROGRAMATICAMENTE.
-        clsCORE::validateSqlStatement($Query, 'QUERY');
+        
+                        clsCORE::validateSqlStatement($Query, 'QUERY');
         $this->Query           = $Query;
         $this->SorterName      = $SorterName;
         $this->SorterDirection = $SorterDirection;
 
-        $this->DataSource = new clsResultDataSource($this);
-        $this->ds = & $this->DataSource;
+                $this->DataSource = new clsDBdefault();
+                        $this->ds = & $this->DataSource;
 
         $this->DataSource->Where = $WhereCondition;
 
-        ## YA AQUI DEBE EXISTIR EL METADATA QUE LO DEBE HABER CREADO clsResultDataSource
-        ## VERIFICAR
-        ## var_dump($this->Metadata);
-        ## die;
-        ## VERIFICADO (Y)
-        ######################
-        #$this->ds->Debug = 1;
 
-        // ESTANDARIZANDO EL USO DE LIMIT
-        // jqwidget envia dos parametros cuando trabaja con jqxGrid que son
-        //      pagenum y pagesize que son el numero de la pagina (o lote, o buffer) deseado y el tamaño de cada pagina (o lote, o buffer)
-        // Para una connotacion mas generalizadas utilizaremos entonces los terminas de
-        //      lote, buffersize y pagesize son sinonimos y significan la cantidad de registros que enviara por cada solicitud
-        //      numlote, buffernum y pagenum son sinonimos significan la posicion dendetro del resultado de dividir la cantiddad total de registros entreel tamano del lote
-        //
-        $this->PageSize = CCGetParam("pagesize", CCGetParam("buffersize", CCGetParam('lote','ALL'))); //es decir por defecto es TODOS los registros
-        if (strtoupper($this->PageSize) == "ALL") {
+                                                                                $this->Metadata = metadata($this->DataSource, $this->Query);
+
+                        
+                                                        
+                                                                $this->PageSize = CCGetParam("pagesize", CCGetParam("buffersize", CCGetParam('lote','ALL')));         if (strtoupper($this->PageSize) == "ALL") {
             $this->PageNumber = intval(1);
         } else {
             $this->PageSize = intval($this->PageSize);
-            $this->PageNumber = CCGetParam("pagenum", CCGetParam("buffernum", CCGetParam('numlote','1'))); //es decir por defecto es el primero
-            $this->PageNumber = intval($this->PageNumber);
+            $this->PageNumber = CCGetParam("pagenum", CCGetParam("buffernum", CCGetParam('numlote','1')));             $this->PageNumber = intval($this->PageNumber);
         }
 
         foreach ($this->Metadata->colsbyname as $col => $prop) {
@@ -1448,51 +957,41 @@ class clsSqlResult {
 
     }
 
-    function clsSqlResult($RelativePath, & $Parent, $Query, $WhereCondition, $SorterName, $SorterDirection)
+    function clsSqlResult($RelativePath
+                , $Query, $WhereCondition, $SorterName, $SorterDirection)
     {
-        self::__construct($RelativePath,$Parent, $Query, $WhereCondition, $SorterName, $SorterDirection);
+        self::__construct($RelativePath
+                        , $Query, $WhereCondition, $SorterName, $SorterDirection);
     }
-//End Class_Initialize Event
 
-//Initialize Method
     function Initialize()
     {
         $this->DataSource->PageSize     = & $this->PageSize;
         $this->DataSource->AbsolutePage = & $this->PageNumber;
-        $this->DataSource->SetOrder($this->SorterName, $this->SorterDirection);
+        $this->SetOrder($this->SorterName, $this->SorterDirection);
         clsCore::setBindValues($this->DataSource);
     }
-//End Initialize Method
 
-//Show Method
     function Show()
     {
         global $jsonStyle;
-        #$Tpl = CCGetTemplate($this);
-        global $CCSLocales;
+                global $CCSLocales;
         $this->RowNumber = 0;
 
-        $this->DataSource->Prepare();
-        $this->DataSource->Open();
+        $this->Prepare();
+        $this->Open();
 
         if ($jsonStyle == 'OBJECT') while (clsCore::simplifyNextRecord($this->DataSource)) {
-            //simplifyNextRecord elemina los elementos Numericos
-            #var_dump($this->DataSource->Record);
-            $this->Records[] = $this->DataSource->Record;
+                                    $this->Records[] = $this->DataSource->Record;
             $this->RowNumber++;
-            #if ($this->RowNumber > 1000) break;
-        }
+                    }
         if ($jsonStyle == 'ARRAY') while (clsCore::simplifyNextRecord($this->DataSource, 'numeric')) {
-            //simplifyNextRecord elemina los elementos String Key
-            #var_dump($this->DataSource->Record);
-            $this->Records[] = $this->DataSource->Record;
+                                    $this->Records[] = $this->DataSource->Record;
             $this->RowNumber++;
         }
 
     }
-//End Show Method
 
-//GetErrors Method
     function GetErrors()
     {
         $errors = "";
@@ -1504,17 +1003,45 @@ class clsSqlResult {
         $errors = ComposeStrings($errors, $this->DataSource->Errors->ToString());
         return $errors;
     }
-//End GetErrors Method
+
+    function SetOrder($SorterName, $SorterDirection)
+    {
+        $this->DataSource->Order = trim("$SorterName $SorterDirection");
+        $this->DataSource->Order = CCGetOrder($this->DataSource->Order, $SorterName, $SorterDirection, "");
+    }
+
+    function Prepare()
+    {
+        global $CCSLocales;
+        global $DefaultDateFormat;
+    }
+
+    function Open()
+    {
+        global $transactiontype;
+                                        $this->DataSource->SQL = $this->Query ." {SQL_Where} {SQL_OrderBy}";
+
+        
+        $this->DataSource->CountSQL = "SELECT COUNT(*) from (\n\n" . $this->Query .") aszalst";
+                if ($this->DataSource->CountSQL)
+            $this->DataSource->RecordsCount = CCGetDBValue(CCBuildSQL($this->DataSource->CountSQL, $this->DataSource->Where, ""), $this->DataSource);
+        else
+            $this->DataSource->RecordsCount = "CCS not counted";
+                        $this->DataSource->query($this->DataSource->OptimizeSQL(CCBuildSQL($this->DataSource->SQL, $this->DataSource->Where, $this->DataSource->Order)));
+            }
+
+    function SetValues()
+    {
+        foreach($this->Parent->Metadata->colsbyname as $col => $prop) {
+            $this->{$col}->SetDBValue(trim($this->f($col)));
+                    }
+    }
 }
-// End Class clsSqlRequest
 
 class clsDMLResult {
 
-//Variables
 
-    // Public variables
-
-//End Variables
+    
 
 
     function __construct($SQL) {
@@ -1528,42 +1055,26 @@ class clsDMLResult {
 
     function exectuteDMLStatement($SQL = '')
     {
-        // La diferencia de DML con respecto a otros es que debe retornar una estructura igual o aumentada del BIND
-        // la razon es que en caso de SELECT INTO los valores en el BIND pueden variar o existen variables en SQL que
-        // no estan en el BIND, por eso decimos que puede aumatar.
-        // la structura debe retornar las variables BIND con sunombre original y en un formato de objeto
-
+                                
         if (substr($SQL, 0, 1) == ':') {
             $sqlParsed = clsCore::sqlSplitFromFile(substr($SQL, 1));
             $SQL = clsCore::getSqlParsed($sqlParsed);
         }
 
-        #
-        # VALIDA QUE EL SQL CORRESPONDE A UNA DML VALIDA
-        #
-        global $transactiontype;
+                                global $transactiontype;
         clsCORE::validateSqlStatement($SQL, $transactiontype);
 
-        global $BIND; // Original $BIND parameter
-        global $BINDED; // After set Parameters
-        $bind = is_object($BIND) ? $BIND : new stdClass();
+        global $BIND;         global $BINDED;         $bind = is_object($BIND) ? $BIND : new stdClass();
 
         $db = new clsDBdefault();
 
-        #var_dump($BIND);
-
+        
         $DB_TYPE = $db->Type;
 
         $lastkey = "";
         if ($DB_TYPE == "Oracle") {
 
-            // TODO : Si es un INSERT detectar la tabla "$table_name" y ubicar el LAST ROW_ID y retornar como LAST_INSERTED_ID
-            //
-            // Requiero saber si es un insert y sobre que tabla es. Para el caso de Oracle es necesario para determinar el LAST ROWID
-            // El insert es de la FORMA "INSERT INTO {TABLE} (......) VALUES (.....)
-            // el nombre de la tbala es lo que este dentro de "INSERT INTO" y "/s*"
-            //
-
+                                                                        
             preg_match_all("/\\INSERT INTO\s*([a-zA-Z0-9_.]+)/ise", $SQL, $arr);
 
             $insertTable = false;
@@ -1571,104 +1082,55 @@ class clsDMLResult {
                 $insertTable = $arr[1][0];
             }
 
-            // Si es INSERT bloquea la tabla;
-            if ($insertTable) {
-                #echo "1\n";
-                //$db->query("lock table  $insertTable in exclusive mode");
-                //if ($db->Errors->ToString()) {
-                //    error_manager($db->Errors->ToString(), -20101);
-                //}
-                $SQL = "". $SQL . " returning rowid||'' into :___lastkey; commit";
+                        if ($insertTable) {
+                                                                                                $SQL = "". $SQL . " returning rowid||'' into :___lastkey; commit";
             }
 
             global $PARAMETERS;
-            #echo "10\n";
-            $SQL = clsCore::sqlSetParameters(
-                $db                 // El conector
-                , $SQL              // el SQL original tomado del sqlparsed
-                , $bind             // Lista de parametros
-            );
+                        $SQL = clsCore::sqlSetParameters(
+                $db                                 , $SQL                              , $bind                         );
 
-            #var_dump($PARAMETERS);
-            $db->query("BEGIN " . $SQL . "; END;");
+                        $db->query("BEGIN " . $SQL . "; END;");
             if ($db->Errors->ToString()) {
                 error_manager($db->Errors->ToString(), -20101);
             }
 
-            #
-            # GET BINDS
-            #
-            // SI LA SENTENCIA EJECUTADA ES ORACLE los valores BIND deben haber sido recuperados justo despues
+                                                
+                        clsCore::getBindValues($db);
+            
 
-            // SOLO MODIFICA LOS VALORES DE LA ESTRUCTURA PARAMETERS. NO SE PUEDEN MODIFICAR POR SELECT .. INTO ... NI SYSTEM ni GLOBAL
-            clsCore::getBindValues($db);
-            /*
-             foreach ($PARAMETERS as $toBind => $obj) {
-                $param = trim(str_replace(',', '', $toBind));
-                $oracle_param = str_replace('.','_',$param);
-                if (isset($db->Record[$oracle_param])) {
-                    if ($oracle_param = "PARAMETERS____LASTKEY") {
-                        $lastkey = $db->Record["PARAMETERS____LASTKEY"];
-                        unset($PARAMETERS->{$toBind});
-                    } else {
-                        $obj->value = $db->Record[$oracle_param];
-                    }
-                }
-            }
-            */
-
-            // Genera el objeto RESULT;
-            $result = clsCore::getBindResult($db);
+                        $result = clsCore::getBindResult($db);
 
         } else if ($DB_TYPE == "MySQL"){
 
             $SQL = clsCore::sqlSetParameters(
-                $db                 // El conector
-                , $SQL              // el SQL original tomado del sqlparsed
-                , $bind             // Lista de parametros
-            );
+                $db                                 , $SQL                              , $bind                         );
 
             $db->query($SQL);
             if ($db->Errors->ToString()) {
                 error_manager($db->Errors->ToString(), -20101);
             }
 
-            #
-            # GET BIND
-            #
-            clsCore::getBindValues($db);
+                                                clsCore::getBindValues($db);
 
-            // Build Result
-            // la siguiente rutina, simplemente construye el objeto RESULT
-            $result = clsCore::getBindResult($db);
+                                    $result = clsCore::getBindResult($db);
 
             $lastkey = CCDLookUp("LAST_INSERT_ID()", "", "", $db);
 
         }
 
         $affected_rows = $db->affected_rows();
-        #
-        # Debe retorna INFO
-        # Debe retornar ERROR
-        # Debe retornae BINDED como RESULT
-        #
-        global $includeError;
+                                                global $includeError;
         global $includeInfo;
         global $includeResult;
 
-        // remember: returnJson($data, $error=false, $info=false, $header=false, $binded=false)
-        clsCore::returnJson(
-            false// data
-            , $includeError ? '{"CODE":"0", "MESSAGE" : "SUCCESS"}' : false // ERROR
-            , $includeInfo ? '{"LAST_INSERT_ID":"'.$lastkey.'", "AFFECTED_ROWS":"'.$affected_rows.'"}' : false
-            , false // header
-            , $includeResult ? $result : false // BINDED originales y/o modificados
-        );
+                clsCore::returnJson(
+            false            , $includeError ? '{"CODE":"0", "MESSAGE" : "SUCCESS"}' : false             , $includeInfo ? '{"LAST_INSERT_ID":"'.$lastkey.'", "AFFECTED_ROWS":"'.$affected_rows.'"}' : false
+            , false             , $includeResult ? $result : false         );
 
     }
 
 }
-// End Class clsDMLResult
 
 function isDateTime($dateStr, $format){
     date_default_timezone_set('UTC');

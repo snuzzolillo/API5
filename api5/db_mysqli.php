@@ -1,21 +1,31 @@
 <?php
 
-//DB MySQLi Class @0-8D47C692
-
 /*
- * Database Management for PHP
- *
- * Copyright (c) 1998-2000 NetUSE AG
- *                    Boris Erdmann, Kristian Koehntopp
- * Derived from db_mysql.php
- *
- * db_mysqli.php
- *
- */ 
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
+
+
+ 
 
 class DB_MySQLi {
   
-  /* public: connection parameters */
+  
   public $DBHost     = "";
   public $DBPort     = 0;
   public $DBSocket   = "";
@@ -24,27 +34,25 @@ class DB_MySQLi {
   public $DBPassword = "";
   public $Persistent = false;
   public $Case       = CASE_LOWER;
-  /* Case puede ser CASE_LOWER CASE_UPPER o false */
+  
 
-  /* public: configuration parameters */
-  public $Auto_Free     = 1;     ## Set to 1 for automatic mysqli_free_result()
-  public $Debug         = 0;     ## Set to 1 for debugging messages.
-  public $Seq_Table     = "db_sequence";
+  
+  public $Auto_Free     = 1;       public $Debug         = 0;       public $Seq_Table     = "db_sequence";
 
-  /* public: result array and current row number */
+  
   public $Record   = array();
   public $Row;
 
-  /* public: current error number and error text */
+  
   public $Errno    = 0;
   public $Error    = "";
     public $SqlState = "";
 
-  /* public: this is an api revision, not a CVS revision. */
+  
   public $type     = "mysql";
   public $revision = "1.2";
 
-  /* private: link and query handles */
+  
   public $Link_ID  = 0;
   public $Query_ID = 0;
   public $Connected = false;
@@ -53,12 +61,12 @@ class DB_MySQLi {
   
 
 
-  /* public: constructor */
+  
   function DB_Sql($query = "") {
       $this->query($query);
   }
 
-  /* public: some trivial reporting */
+  
   function link_id() {
     return $this->Link_ID;
   }
@@ -69,7 +77,7 @@ class DB_MySQLi {
 
   function try_connect($DBDatabase = "", $DBHost = "", $DBPort = 0, $DBSocket = "", $DBUser = "", $DBPassword = "") {
     $this->Query_ID  = 0;
-    /* Handle defaults */
+    
     if ("" == $DBDatabase)   $DBDatabase = $this->DBDatabase;
     if (0 == $DBPort)        $DBPort     = $this->DBPort;
     if ("" == $DBSocket)     $DBSocket   = $this->DBSocket;
@@ -82,15 +90,14 @@ class DB_MySQLi {
     $this->Link_ID = @mysqli_connect($DBHost, $DBUser, $DBPassword, $DBDatabase, $DBPort, $DBSocket);
     $this->Connected = $this->Link_ID ? true : false;
 
-    // Reestablece el error handler
-    set_error_handler("all_errors_handler", E_ALL);
+        set_error_handler("all_errors_handler", E_ALL);
 
     return $this->Connected;
   }
 
-  /* public: connection management */
+  
   function connect($DBDatabase = "", $DBHost = "", $DBPort = 0, $DBSocket="", $DBUser = "", $DBPassword = "") {
-    /* Handle defaults */
+    
     if ("" == $DBDatabase)   $DBDatabase = $this->DBDatabase;
     if (0 == $DBPort)        $DBPort     = $this->DBPort;
     if ("" == $DBSocket)     $DBSocket   = $this->DBSocket;
@@ -99,19 +106,17 @@ class DB_MySQLi {
     if ("" == $DBPassword)   $DBPassword = $this->DBPassword;
       
 
-    /* establish connection, select database */
+    
     if (!$this->Connected) {
       $this->Query_ID  = 0;    
       $this->Link_ID = @mysqli_connect($DBHost, $DBUser, $DBPassword, $DBDatabase, $DBPort, $DBSocket);
 
       if (!$this->Link_ID) {
           $msg["code"] =  "2";
-          #$msg["message"] = mysqli_error($this->Link_ID);
-          $msg["message"] = "mysqli_connect($DBHost, $DBUser, \$DBPassword, $DBDatabase, $DBPort, $DBSocket) failed.";
+                    $msg["message"] = "mysqli_connect($DBHost, $DBUser, \$DBPassword, $DBDatabase, $DBPort, $DBSocket) failed.";
           $this->halt($msg);
 
-          #$this->halt("mysqli_connect($DBHost, $DBUser, \$DBPassword, $DBDatabase, $DBPort, $DBSocket) failed.");
-        return 0;
+                  return 0;
       }
       $server_info = @mysqli_get_server_info($this->Link_ID);
       preg_match("/\d+\.\d+(\.\d+)?/", $server_info, $matches);
@@ -132,7 +137,7 @@ class DB_MySQLi {
 
 
 
-  /* public: discard the query result */
+  
   function free_result() {
     if (is_resource($this->Query_ID)) {
       @mysqli_free_result($this->Query_ID);
@@ -140,22 +145,18 @@ class DB_MySQLi {
     $this->Query_ID = 0;
   }
 
-  /* public: perform a query */
+  
   function query($Query_String) {
-    /* No empty queries, please, since PHP4 chokes on them. */
+    
     if ($Query_String == "")
-      /* The empty query string is passed on from the constructor,
-       * when calling the class without a query, e.g. in situations
-       * like these: '$db = new DB_Sql_Subclass;'
-       */
+      
       return 0;
 
     if (!$this->connect()) {
-      return 0; /* we already complained in connect() about that. */
+      return 0; 
     };
 
-    # New query, discard previous result.
-    if ($this->Query_ID) {
+        if ($this->Query_ID) {
       $this->free_result();
     }
 
@@ -176,8 +177,7 @@ class DB_MySQLi {
       if ($this->Link_ID->affected_rows == 0 and $this->Link_ID->warning_count > 0) {
         $e = $this->Link_ID->get_warnings();
         if ($e->errno == 1305) {
-          # casos como warning durante un drop if exists no es relevante.
-        } else {
+                  } else {
           $msg["code"] = 1329;
           $msg["code"] = $e->errno;
           $msg["message"] = $e->message.($msg["code"] == 1329 ? "" : " No data - zero rows fetched, selected, or processed ");
@@ -186,11 +186,10 @@ class DB_MySQLi {
         }
       }
     }
-    # Will return nada if it fails. That's fine.
-    return $this->Query_ID;
+        return $this->Query_ID;
   }
 
-  /* public: walk result set */
+  
   function next_record() {
     if (!$this->Query_ID) 
       return 0;
@@ -212,7 +211,7 @@ class DB_MySQLi {
     return $stat;
   }
 
-  /* public: position in result set */
+  
   function seek($pos = 0) {
     $status = @mysqli_data_seek($this->Query_ID, $pos);
     if ($status) {
@@ -220,17 +219,14 @@ class DB_MySQLi {
     } else {
       $this->Errors->addError("Database error: seek($pos) failed -  result has ".$this->num_rows()." rows");
 
-      /* half assed attempt to save the day, 
-       * but do not consider this documented or even
-       * desireable behaviour.
-       */
+      
       @mysqli_data_seek($this->Query_ID, $this->num_rows());
       $this->Row = $this->num_rows();
     }
     return true;
   }
 
-  /* public: table locking */
+  
   function lock($table, $mode="write") {
     $this->connect();
     
@@ -267,7 +263,7 @@ class DB_MySQLi {
   }
 
 
-  /* public: evaluate the result (size, width) */
+  
   function affected_rows() {
     return @mysqli_affected_rows($this->Link_ID);
   }
@@ -280,7 +276,7 @@ class DB_MySQLi {
     return @mysqli_num_fields($this->Query_ID);
   }
 
-  /* public: shorthand notation */
+  
   function nf() {
     return $this->num_rows();
   }
@@ -297,19 +293,19 @@ class DB_MySQLi {
     print $this->Record[$Name];
   }
 
-  /* public: sequence numbers */
+  
   function nextid($seq_name) {
     $this->connect();
     
     if ($this->lock($this->Seq_Table)) {
-      /* get sequence number (locked) and increment */
+      
       $q  = sprintf("select nextid from %s where seq_name = '%s' LIMIT 1",
                 $this->Seq_Table,
                 $seq_name);
       $id  = @mysqli_query($this->Link_ID, $q);
       $res = @mysqli_fetch_array($id);
       
-      /* No current value, make one */
+      
       if (!is_array($res)) {
         $currentid = 0;
         $q = sprintf("insert into %s values('%s', %s)",
@@ -345,19 +341,10 @@ class DB_MySQLi {
       }
     }
 
-    /* private: error handling */
+    
     function halt($msg, $query) {
       $msg["message"] = str_replace(array("\\", '"', "/", "\n" , "\r", "\t", "\b"), array("\\\\", '\"', '\/', '\\n', '', '\t', '\b'), $msg["message"]);
-      error_manager($msg["message"], 'MYSQL-'.$msg["code"]);
-      //$e = '{"ERROR" : {"CODE":"'.$msg["code"].'", "MESSAGE" : "'.$msg["message"]
-      //    .'", "TYPE" : "'.'MySQL'.'"}'
-      //    #.'", "SQL" : "'.$query.'"}'
-      //    .'}';
-      //die($e);
-
-      //printf("</td></tr></table><b>Database error:</b> %s<br>\n", $msg);
-      //printf("<b>MySQL Error</b><br>\n");
-      //die("Session halted.");
+      error_manager($msg["message"], $msg["code"], 'DB');
   }
 
   function table_names() {
@@ -385,7 +372,6 @@ class DB_MySQLi {
 
 }
 
-//End DB MySQLi Class
 
 
 ?>

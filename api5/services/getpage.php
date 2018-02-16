@@ -1,23 +1,29 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: seven-11
- * Date: 23/08/2016
- * Time: 10:00
- */
+
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
+
 
 function getPage($html_brand, $params)
 {
-    #
-    # $params : debe ser un arreglo tipo
-    # [
-    #    'varname1' => val3,
-    #    'varname2' => val2,
-    #    'varname3' => val1,
-    # ]
-    # que seran pasados como POST
-    #
-
+                                    
     $ch = curl_init();
 
     ini_set('user_agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:7.0.1) Gecko/20100101 Firefox/7.0.1');
@@ -51,8 +57,7 @@ function getPage($html_brand, $params)
         CURLOPT_USERPWD 	   => "system:manager",
         CURLOPT_URL            => $html_brand,
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_SSL_VERIFYPEER => false,  //verificacin peer del certificado
-        CURLOPT_HEADER         => false,
+        CURLOPT_SSL_VERIFYPEER => false,          CURLOPT_HEADER         => false,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_ENCODING       => "",
         CURLOPT_AUTOREFERER    => true,
@@ -79,5 +84,3 @@ function getPage($html_brand, $params)
     return $response;
 }
 
-//echo getPage('https://www.wineshop.it/en/wine-and-co/italy-of-wine/'.$_GET["r"]);
-//echo getPage('http://cne.gov.ve/web/registro_electoral/ce.php?nacionalidad=V&cedula='.$_GET["r"]);

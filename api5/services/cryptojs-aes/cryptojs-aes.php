@@ -1,19 +1,27 @@
 <?php
-/**
-* Helper library for CryptoJS AES encryption/decryption
-* Allow you to use AES encryption on client side and server side vice versa
-*
-* @author BrainFooLong (bfldev.com)
-* @link https://github.com/brainfoolong/cryptojs-aes-php
+
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
 */
 
-/**
-* Decrypt data from a CryptoJS json encoding string
-*
-* @param mixed $passphrase
-* @param mixed $jsonString
-* @return mixed
-*/
+
+
+
+
 function cryptoJsAesDecrypt($passphrase, $jsonString){
     $jsondata = json_decode($jsonString, true);
     try {
@@ -34,13 +42,7 @@ function cryptoJsAesDecrypt($passphrase, $jsonString){
     return json_decode($data, true);
 }
 
-/**
-* Encrypt value to a cryptojs compatiable json encoding string
-*
-* @param mixed $passphrase
-* @param mixed $value
-* @return string
-*/
+
 function cryptoJsAesEncrypt($passphrase, $value){
     $salt = openssl_random_pseudo_bytes(8);
     $salted = '';

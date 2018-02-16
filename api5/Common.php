@@ -1,16 +1,31 @@
 <?php
-//Include Files @0-ED610940
+
+/*
+ +-----------------------------------------------------------------------+
+ | This file is part of API5 RESTful SQLtoJSON                           |
+ | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ |                                                                       |
+ | Licensed under the GNU General Public License version 3 or            |
+ | any later version with exceptions for skins & plugins.                |
+ | See the LICENSE file for a full license statement.                    |
+ |                                                                       |
+ | Pduction                                                              |
+ |   Date   : 02/16/2018                                                 |
+ |   Time   : 12:47:27 PM                                                |
+ |   Version: 0.0.1                                                      |
+ +-----------------------------------------------------------------------+
+ | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
+ +-----------------------------------------------------------------------+
+*/
+
+
 error_reporting(error_reporting() & (-1 ^ E_DEPRECATED));
 
 include(RelativePath . "/Classes.php");
 include(RelativePath . "/db_adapter.php");
-//End Include Files
 
-//Connection Settings @0-EFC1373E
 $CCConnectionSettings = array ();
-//End Connection Settings
 
-//Initialize Common Variables @0-1F4472DC
 $PHPVersion = explode(".",  phpversion());
 if (($PHPVersion[0] < 4) || ($PHPVersion[0] == 4  && $PHPVersion[1] < 1)) {
     echo "Sorry. This program requires PHP 4.1 and above to run. You may upgrade your php at <a href='http://www.php.net/downloads.php'>http://www.php.net/downloads.php</a>";
@@ -49,7 +64,6 @@ $CCSLocales->AddLocale("es", Array("es", "ES", array(1, 0, ""), 2, ",", "."
 , array("domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado")
 , array("dom", "lun", "mar", "mié", "jue", "vie", "sáb")
 , array("D", "L", "M", "M", "J", "V", "S")
-//, array("dd", "-", "mm", "-", "yyyy")
 , array("yyyy", "-", "mm", "-", "dd", " ", "HH", ":", "nn", ":", "ss")
 , array("dddd", ", ", "dd", " de ", "mmmm", " de ", "yyyy")
 , array("H", ":", "nn"), array("H", ":", "nn", ":", "ss"), "", "", 1, false, "", "utf-8", "UTF-8", array(1, 7)));
@@ -62,10 +76,7 @@ if ($PHPLocale = $CCSLocales->GetFormatInfo("PHPLocale"))
 CCConvertDataArrays();
 $CCProjectStyle = "";
 $CCProjectDesign = "";
-//CCSelectProjectStyle();
-//CCSelectProjectDesign();
 
-//for compatibility
 $ShortWeekdays = $CCSLocales->GetFormatInfo("WeekdayShortNames");
 $Weekdays = $CCSLocales->GetFormatInfo("WeekdayNames");
 $ShortMonths =  $CCSLocales->GetFormatInfo("MonthShortNames");
@@ -73,8 +84,7 @@ $Months = $CCSLocales->GetFormatInfo("MonthNames");
 
 define("ccsInteger", 1);
 define("ccsFloat", 2);
-define("ccsSingle", ccsFloat); //alias
-define("ccsText", 3);
+define("ccsSingle", ccsFloat); define("ccsText", 3);
 define("ccsDate", 4);
 define("ccsBoolean", 5);
 define("ccsMemo", 6);
@@ -104,23 +114,17 @@ define("CCS_SLIDING_EXPIRATION", false);
 $DefaultDateFormat = array("ShortDate");
 
 $MainPage = new clsMainPage();
-//End Initialize Common Variables
 
-//CCToHTML @0-93F44B0D
 function CCToHTML($Value)
 {
   return htmlspecialchars($Value);
 }
-//End CCToHTML
 
-//CCToURL @0-88FAFE26
 function CCToURL($Value)
 {
   return urlencode($Value);
 }
-//End CCToURL
 
-//CCGetEvent @0-7AE506F3
 function CCGetEvent($events, $event_name, & $sender)
 {
   $result = true;
@@ -129,9 +133,7 @@ function CCGetEvent($events, $event_name, & $sender)
     $result = call_user_func_array($function_name, array(& $sender));
   return $result;  
 }
-//End CCGetEvent
 
-//CCGetParentContainer @0-0CD41DEB
 function & CCGetParentContainer(& $object)
 {
   $i = & $object;
@@ -139,9 +141,7 @@ function & CCGetParentContainer(& $object)
     $i = & $i->Parent;
   return $i;
 }
-//End CCGetParentContainer
 
-//CCGetMasterPagePath @0-1C2548FD
 function CCGetMasterPagePath(& $object) {
   $i = & $object;
   while ($i && !(isset($i->MasterPage) && $i->MasterPage != null)) {
@@ -149,9 +149,7 @@ function CCGetMasterPagePath(& $object) {
   }
   return (isset($i->MasterPage)) ? $i->PathToCurrentPage : "";
 }
-//End CCGetMasterPagePath
 
-//CCGetParentPage @0-AD47469D
 function & CCGetParentPage(& $object)
 {
   $i = & $object;
@@ -159,44 +157,32 @@ function & CCGetParentPage(& $object)
     $i = & $i->Parent;
   return $i;
 }
-//End CCGetParentPage
 
-//CCGetValueHTML @0-B8903145
 function CCGetValueHTML(&$db, $fieldname)
 {
   return CCToHTML($db->f($fieldname));
 }
-//End CCGetValueHTML
 
-//CCGetValue @0-36EF6396
 function CCGetValue(&$db, $fieldname)
 {
   return $db->f($fieldname);
 }
-//End CCGetValue
 
-//CCGetSession @0-A9848448
 function CCGetSession($parameter_name, $default_value = "")
 {
     return isset($_SESSION[$parameter_name]) ? $_SESSION[$parameter_name] : $default_value;
 }
-//End CCGetSession
 
-//CCSetSession @0-7889A59E
 function CCSetSession($param_name, $param_value)
 {
     $_SESSION[$param_name] = $param_value;
 }
-//End CCSetSession
 
-//CCGetCookie @0-6B04B9B5
 function CCGetCookie($parameter_name)
 {
     return isset($_COOKIE[$parameter_name]) ? $_COOKIE[$parameter_name] : "";
 }
-//End CCGetCookie
 
-//CCSetCookie @0-1968C877
 function CCSetCookie($parameter_name, $param_value, $expired = -1, $path = "/", $domain = "", $secured = false, $http_only = false)
 {
   if ($expired == -1)
@@ -205,9 +191,7 @@ function CCSetCookie($parameter_name, $param_value, $expired = -1, $path = "/", 
     $expired = time() + $expired;
   setcookie ($parameter_name, $param_value, $expired, $path, $domain, $secured, $http_only);
 }
-//End CCSetCookie
 
-//CCStrip @0-E1370054
 function CCStrip($value)
 {
   if(get_magic_quotes_gpc() != 0)
@@ -220,9 +204,7 @@ function CCStrip($value)
   }
   return $value;
 }
-//End CCStrip
 
-//CCGetParam @0-3BB7E2D4
 function CCGetParam($parameter_name, $default_value = "")
 {
     $parameter_value = "";
@@ -234,9 +216,7 @@ function CCGetParam($parameter_name, $default_value = "")
         $parameter_value = $default_value;
     return $parameter_value;
 }
-//End CCGetParam
 
-//CCGetParamStartsWith @0-4BE76C1A
 function CCGetParamStartsWith($prefix)
 {
     $parameter_name = "";
@@ -256,23 +236,17 @@ function CCGetParamStartsWith($prefix)
     }
     return $parameter_name;
 }
-//End CCGetParamStartsWith
 
-//CCGetFromPost @0-393586D2
 function CCGetFromPost($parameter_name, $default_value = "")
 {
     return isset($_POST[$parameter_name]) ? CCStrip($_POST[$parameter_name]) : $default_value;
 }
-//End CCGetFromPost
 
-//CCGetFromGet @0-90CF1921
 function CCGetFromGet($parameter_name, $default_value = "")
 {
     return isset($_GET[$parameter_name]) ? CCStrip($_GET[$parameter_name]) : $default_value;
 }
-//End CCGetFromGet
 
-//CCToSQL @0-422F5B92
 function CCToSQL($Value, $ValueType)
 {
   if(!strlen($Value))
@@ -291,26 +265,20 @@ function CCToSQL($Value, $ValueType)
     }
   }
 }
-//End CCToSQL
 
-//CCDLookUp @0-AD41DC8E
 function CCDLookUp($field_name, $table_name, $where_condition, &$db)
 {
   $sql = "SELECT " . $field_name . ($table_name ? " FROM " . $table_name : "") . ($where_condition ? " WHERE " . $where_condition : "");
   return CCGetDBValue($sql, $db);
 }
-//End CCDLookUp
 
-//CCGetDBValue @0-6DCF4DC4
 function CCGetDBValue($sql, &$db)
 {
   $db->query($sql);
   $dbvalue = $db->next_record() ? $db->f(0) : "";
   return $dbvalue;  
 }
-//End CCGetDBValue
 
-//CCGetListValues @0-DCBE0F84
 function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column = "", $text_column = "", $dbformat = "", $datatype = "", $errorclass = "", $fieldname = "", $DSType = dsSQL)
 {
     $errors = new clsErrors();
@@ -341,9 +309,7 @@ function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column 
     }
 }
 
-//End CCGetListValues
 
-//CCParseValue @0-DCA2A586
   function CCParseValue($ParsingValue, $Format, $DataType, $ErrorClass, $FieldName, $isDBFormat = false)
   {
     global $CCSLocales;
@@ -413,9 +379,7 @@ function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column 
   }
 }
 
-//End CCParseValue
 
-//CCFormatValue @0-A384E38C
   function CCFormatValue($Value, $Format, $DataType, $isDBFormat = false)
   {
     switch($DataType)
@@ -439,9 +403,7 @@ function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column 
     return $Value;
   }
 
-//End CCFormatValue
 
-//CCBuildSQL @0-9C1D4901
 function CCBuildSQL($sql, $where = "", $order_by = "")
 {
     if (!$sql) return "";
@@ -456,9 +418,7 @@ function CCBuildSQL($sql, $where = "", $order_by = "")
     return $sql;
 }
 
-//End CCBuildSQL
 
-//CCBuildInsert @0-6433D327
 function CCBuildInsert($table, & $Fields, & $Connection)
 {
     $fields = array();
@@ -478,9 +438,7 @@ function CCBuildInsert($table, & $Fields, & $Connection)
 
 }
 
-//End CCBuildInsert
 
-//CCBuildUpdate @0-E2594C39
 function CCBuildUpdate($table, & $Fields, & $Connection)
 {
     $pairs = array();
@@ -499,9 +457,7 @@ function CCBuildUpdate($table, & $Fields, & $Connection)
 
 }
 
-//End CCBuildUpdate
 
-//CCGetRequestParam @0-AC78F6A0
 function CCGetRequestParam($ParameterName, $Method, $DefaultValue = "")
 {
     $ParameterValue = $DefaultValue;
@@ -511,9 +467,7 @@ function CCGetRequestParam($ParameterName, $Method, $DefaultValue = "")
         $ParameterValue = CCStrip($_POST[$ParameterName]);
     return $ParameterValue;
 }
-//End CCGetRequestParam
 
-//CCGetQueryString @0-CDA71B06
 function CCGetQueryString($CollectionName, $RemoveParameters)
 {
     $querystring = "";
@@ -536,9 +490,7 @@ function CCGetQueryString($CollectionName, $RemoveParameters)
             "The CollectionName contains an illegal value.");
     return $querystring;
 }
-//End CCGetQueryString
 
-//CCCollectionToString @0-F45EFAFC
 function CCCollectionToString($ParametersCollection, $RemoveParameters)
 {
   $Result = ""; 
@@ -574,9 +526,7 @@ function CCCollectionToString($ParametersCollection, $RemoveParameters)
     $Result = substr($Result, 1);
   return $Result;
 }
-//End CCCollectionToString
 
-//CCMergeQueryStrings @0-5BB2EE59
 function CCMergeQueryStrings($LeftQueryString, $RightQueryString = "")
 {
   $QueryString = $LeftQueryString; 
@@ -587,9 +537,7 @@ function CCMergeQueryStrings($LeftQueryString, $RightQueryString = "")
   
   return $QueryString;
 }
-//End CCMergeQueryStrings
 
-//CCAddParam @0-5D96DB6B
 function CCAddParam($querystring, $ParameterName, $ParameterValue)
 {
     $queryStr = null; $paramStr = null;
@@ -611,9 +559,7 @@ function CCAddParam($querystring, $ParameterName, $ParameterValue)
     $paramStr = ltrim($paramStr, '&');
     return $queryStr ? $queryStr . '?' . $paramStr : $paramStr;
 }
-//End CCAddParam
 
-//CCRemoveParam @0-8DE77C37
 function CCRemoveParam($querystring, $ParameterName)
 {
 $queryStr = null; $paramStr = null;
@@ -628,9 +574,7 @@ $queryStr = null; $paramStr = null;
     $paramStr = ltrim($paramStr, '&');
     return $queryStr ? $queryStr . '?' . $paramStr : $paramStr;
 }
-//End CCRemoveParam
 
-//CCGetOrder @0-27B4AC18
 function CCGetOrder($DefaultSorting, $SorterName, $SorterDirection, $MapArray)
 {
   if(is_array($MapArray) && isset($MapArray[$SorterName]))
@@ -643,9 +587,7 @@ function CCGetOrder($DefaultSorting, $SorterName, $SorterDirection, $MapArray)
 
   return $OrderValue;
 }
-//End CCGetOrder
 
-//CCGetDateArray @0-37E8EF24
 function CCGetDateArray($timestamp = "")
 {
   $DateArray = array(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -662,9 +604,7 @@ function CCGetDateArray($timestamp = "")
 
   return $DateArray;
 }
-//End CCGetDateArray
 
-//CCFormatDate @0-5FD7EA36
 function CCFormatDate($DateToFormat, $FormatMask)
 {
 
@@ -804,9 +744,7 @@ function CCFormatDate($DateToFormat, $FormatMask)
   }
   return $FormattedDate;
 }
-//End CCFormatDate
 
-//CCValidateDate @0-1DFF5582
 function CCValidateDate($ValidatingDate)
 {
   $IsValid = true;
@@ -820,9 +758,7 @@ function CCValidateDate($ValidatingDate)
 
   return $IsValid;
 }
-//End CCValidateDate
 
-//CCValidateDateMask @0-6A1F5673
 function CCValidateDateMask($ValidatingDate, $FormatMask)
 {
   $IsValid = true;
@@ -834,9 +770,7 @@ function CCValidateDateMask($ValidatingDate, $FormatMask)
 
   return $IsValid;
 }
-//End CCValidateDateMask
 
-//CCParseDate @0-5F189BA0
 function CCParseDate($ParsingDate, $FormatMask)
 {
   global $CCSLocales;
@@ -898,9 +832,7 @@ function CCParseDate($ParsingDate, $FormatMask)
 
   return $ParsingDate;
 }
-//End CCParseDate
 
-//CCGetDateRegExp @0-F17A33B6
 function CCGetDateRegExp($FormatMask)
 {
   global $CCSLocales;
@@ -987,9 +919,7 @@ function CCGetDateRegExp($FormatMask)
 
   return $RegExp;
 }
-//End CCGetDateRegExp
 
-//CCAddEscape @0-06D50C27
 function CCAddEscape($FormatMask)
 {
   $meta_characters = array("\\", "^", "\$", ".", "[", "|", "(", ")", "?", "*", "+", "{", "-", "]", "/");
@@ -997,9 +927,7 @@ function CCAddEscape($FormatMask)
     $FormatMask = str_replace($meta_characters[$i], "\\" . $meta_characters[$i], $FormatMask);
   return $FormatMask;
 }
-//End CCAddEscape
 
-//CCGetIndex @0-8DB8E12C
 function CCGetIndex($ArrayValues, $Value, $IgnoreCase = true)
 {
   $index = false;
@@ -1013,9 +941,7 @@ function CCGetIndex($ArrayValues, $Value, $IgnoreCase = true)
   }
   return $index;
 }
-//End CCGetIndex
 
-//CCFormatNumber @0-5EF57318
 function CCFormatNumber($NumberToFormat, $FormatArray, $DataType = ccsFloat, $isDBFormat = false)
 {
   global $CCSLocales;
@@ -1028,8 +954,7 @@ function CCFormatNumber($NumberToFormat, $FormatArray, $DataType = ccsFloat, $is
     $NumberToFormat = abs($NumberToFormat);
     $NumberToFormat *= $FormatArray[7];
   
-    if($IsExtendedFormat) // Extended format
-    {
+    if($IsExtendedFormat)     {
       $DecimalSeparator        = !is_null($FormatArray[2]) ? $FormatArray[2] : ($isDBFormat ? "." : $CCSLocales->GetFormatInfo("DecimalSeparator"));
       $PeriodSeparator         = !is_null($FormatArray[3]) ? $FormatArray[3] : ($isDBFormat ? "" : $CCSLocales->GetFormatInfo("GroupSeparator"));
 
@@ -1099,8 +1024,7 @@ function CCFormatNumber($NumberToFormat, $FormatArray, $DataType = ccsFloat, $is
         }
       }
 
-      // Left part after decimal
-      $RightResult = "";
+            $RightResult = "";
       $IsRightNumber = false;
       if(is_array($AfterDecimal))
       {
@@ -1136,8 +1060,7 @@ function CCFormatNumber($NumberToFormat, $FormatArray, $DataType = ccsFloat, $is
       if(!$FormatArray[4] && $IsNegative && $Result)
         $Result = "-" . $Result;
     }
-    else // Simple format
-    {
+    else     {
       $DecimalSeparator = !is_null($FormatArray[2]) ? $FormatArray[2] : ($isDBFormat ? "." : $CCSLocales->GetFormatInfo("DecimalSeparator"));
       $PeriodSeparator = !is_null($FormatArray[3]) ? $FormatArray[3] : ($isDBFormat ? "" : $CCSLocales->GetFormatInfo("GroupSeparator"));
       $AfterDecimal = !is_null($FormatArray[1]) ? $FormatArray[1] : ($DataType != ccsInteger ? ($isDBFormat ? 100 : $CCSLocales->GetFormatInfo("DecimalDigits")) : 0);
@@ -1178,9 +1101,7 @@ function CCFormatNumber($NumberToFormat, $FormatArray, $DataType = ccsFloat, $is
 
   return $Result;
 }
-//End CCFormatNumber
 
-//CCValidateNumber @0-C3F4C267
 function CCValidateNumber($NumberValue, $FormatArray, $isDBFormat = false)
 {
   $is_valid = true;
@@ -1192,17 +1113,14 @@ function CCValidateNumber($NumberValue, $FormatArray, $isDBFormat = false)
   return $is_valid;
 }
 
-//End CCValidateNumber
 
-//CCParseNumber @0-3F28B3F3
 function CCParseNumber($NumberValue, $FormatArray, $DataType, $isDBFormat = false)
 {
   $NumberValue = CCCleanNumber($NumberValue, $FormatArray, $isDBFormat);
   if(is_array($FormatArray) && strlen($NumberValue))
   {
 
-    if($FormatArray[4]) // Contains parenthesis
-      $NumberValue = - abs(doubleval($NumberValue));
+    if($FormatArray[4])       $NumberValue = - abs(doubleval($NumberValue));
 
     $NumberValue /= $FormatArray[7];
   }
@@ -1217,9 +1135,7 @@ function CCParseNumber($NumberValue, $FormatArray, $DataType, $isDBFormat = fals
 
   return $NumberValue;
 }
-//End CCParseNumber
 
-//CCCleanNumber @0-70E63D24
 function CCCleanNumber($NumberValue, $FormatArray, $isDBFormat = false)
 {
   global $CCSLocales;
@@ -1227,8 +1143,7 @@ function CCCleanNumber($NumberValue, $FormatArray, $isDBFormat = false)
   {
     $IsExtendedFormat = $FormatArray[0];
 
-    if($IsExtendedFormat) // Extended format
-    {
+    if($IsExtendedFormat)     {
       $BeforeDecimal = $FormatArray[5];
       $AfterDecimal = $FormatArray[6];
     
@@ -1256,8 +1171,7 @@ function CCCleanNumber($NumberValue, $FormatArray, $isDBFormat = false)
         }
       }
     }
-    else // Simple format
-    {
+    else     {
       if(strlen($FormatArray[5]))
         $NumberValue = str_replace($FormatArray[5], "", $NumberValue);
       if(strlen($FormatArray[6]))
@@ -1266,9 +1180,7 @@ function CCCleanNumber($NumberValue, $FormatArray, $isDBFormat = false)
     $DecimalSeparator = !is_null($FormatArray[2]) ? $FormatArray[2] : ($isDBFormat ? "." : $CCSLocales->GetFormatInfo("DecimalSeparator"));
     $PeriodSeparator = !is_null($FormatArray[3]) ? $FormatArray[3] : ($isDBFormat ? "," : $CCSLocales->GetFormatInfo("GroupSeparator"));
 
-    $NumberValue = str_replace($PeriodSeparator, "", $NumberValue); // Period separator
-    $NumberValue = str_replace($DecimalSeparator, ".", $NumberValue); // Decimal separator
-
+    $NumberValue = str_replace($PeriodSeparator, "", $NumberValue);     $NumberValue = str_replace($DecimalSeparator, ".", $NumberValue); 
     if(strlen($FormatArray[9]))
     {
       if($CCSIsXHTML) {
@@ -1292,23 +1204,17 @@ function CCCleanNumber($NumberValue, $FormatArray, $isDBFormat = false)
 
   return $NumberValue;
 }
-//End CCCleanNumber
 
-//CCParseInteger @0-08035527
 function CCParseInteger($NumberValue, $FormatArray, $isDBFormat = false)
 {
   return CCParseNumber($NumberValue, $FormatArray, ccsInteger, $isDBFormat);
 }
-//End CCParseInteger
 
-//CCParseFloat @0-89DDFF62
 function CCParseFloat($NumberValue, $FormatArray, $isDBFormat = false)
 {
   return CCParseNumber($NumberValue, $FormatArray, ccsFloat, $isDBFormat);
 }
-//End CCParseFloat
 
-//CCValidateBoolean @0-DFB0ECFA
 function CCValidateBoolean($BooleanValue, $Format)
 {
   return $BooleanValue == ""
@@ -1321,9 +1227,7 @@ function CCValidateBoolean($BooleanValue, $Format)
             || strtolower($BooleanValue) == strtolower($Format[1])
             || strtolower($BooleanValue) == strtolower($Format[2]))); 
 }
-//End CCValidateBoolean
 
-//CCFormatBoolean @0-5B3F5CF9
 function CCFormatBoolean($BooleanValue, $Format)
 {
   $Result = $BooleanValue;
@@ -1339,9 +1243,7 @@ function CCFormatBoolean($BooleanValue, $Format)
 
   return $Result;
 }
-//End CCFormatBoolean
 
-//CCParseBoolean @0-1DA49599
 function CCParseBoolean($Value, $Format)
 {
   if (is_array($Format)) {
@@ -1358,9 +1260,7 @@ function CCParseBoolean($Value, $Format)
     return true;
   return "";
 }
-//End CCParseBoolean
 
-//CCGetBooleanFormat @0-B9D3DA0C
 function CCGetBooleanFormat($Format)
 {
   $FormatString = "";
@@ -1375,9 +1275,7 @@ function CCGetBooleanFormat($Format)
   }
   return $FormatString;
 }
-//End CCGetBooleanFormat
 
-//CCCompareValues @0-8D9B429E
 function CCCompareValues($Value1,$Value2,$DataType = ccsText, $Format = "")
 {
   switch ($DataType) {
@@ -1435,9 +1333,7 @@ function CCCompareValues($Value1,$Value2,$DataType = ccsText, $Format = "")
     
   }
 }
-//End CCCompareValues
 
-//CCDateAdd @0-FD3E5738
 function CCDateAdd($date, $value) {
   if (CCValidateDate($date)) {
     $FormatArray = array("yyyy", "-", "mm", "-", "dd", " ", "HH", ":", "nn", ":", "ss");
@@ -1552,9 +1448,7 @@ function CCDateAdd($date, $value) {
   }
   return false;
 }
-//End CCDateAdd
 
-//CCDaysInMonth @0-4DFC9A98
 function CCDaysInMonth($year, $month) {
   switch ($month) {
     case 4:
@@ -1575,12 +1469,9 @@ function CCDaysInMonth($year, $month) {
   }
 
 }
-//End CCDaysInMonth
 
-//CCDayOfWeek @0-479679B3
 function CCDayOfWeek($date) {
-  //return 1 - Sun, 2 - Mon, 3 - Tue ...
-  $year = $date[ccsYear];
+    $year = $date[ccsYear];
   $month = $date[ccsMonth];
   $day = $date[ccsDay];
   $century = $year - ( $year % 100 );
@@ -1604,18 +1495,14 @@ function CCDayOfWeek($date) {
   $on = $on % 7;
   return ($doomsday + $on + 7) % 7 + 1;
 }
-//End CCDayOfWeek
 
-//CCDayOfYear @0-D35E28C6
 function CCDayOfYear($date) {
   $days = 0;
   for ($month = 1; $month < $date[ccsMonth]; $month++)
     $days += CCDaysInMonth($date[ccsYear], $month);
   return $days + $date[ccsDay];
 }
-//End CCDayOfYear
 
-//CCConvertEncoding @0-3B58E929
 function CCConvertEncoding($text, $from, $to)
 {
     if (strlen($from) && strlen($to) && strcasecmp($from, $to)) {
@@ -1623,9 +1510,7 @@ function CCConvertEncoding($text, $from, $to)
     } else
         return $text;
 }
-//End CCConvertEncoding
 
-//CCConvertEncodingArray @0-1A109043
 function CCConvertEncodingArray($array, $from="", $to="")
 {
     if (strlen($from) && strlen($to) && strcasecmp($from, $to)) {
@@ -1634,9 +1519,7 @@ function CCConvertEncodingArray($array, $from="", $to="")
     }
     return $array;
 }
-//End CCConvertEncodingArray
 
-//CCConvertDataArrays @0-303D5215
 function CCConvertDataArrays($from="", $to="")
 {
     global $FileEncoding;
@@ -1653,16 +1536,12 @@ function CCConvertDataArrays($from="", $to="")
         $_GET = CCConvertEncodingArray($_GET, $from, $to);
     }
 }
-//End CCConvertDataArrays
 
-//CCGetOriginalFileName @0-16048768
 function CCGetOriginalFileName($value)
 {
     return preg_match("/^\d{14,}\./", $value) ? substr($value, strpos($value, ".") + 1) : $value;
 }
-//End CCGetOriginalFileName
 
-//ComposeStrings @0-09CE565D
 function ComposeStrings($str1, $str2, $delimiter = null)
 {
     global $CCSIsXHTML;
@@ -1671,9 +1550,7 @@ function ComposeStrings($str1, $str2, $delimiter = null)
     }
     return $str1 . (strlen($str1) && strlen($str2) ? $delimiter : "") . $str2;
 }
-//End ComposeStrings
 
-//CCSelectProjectStyle @0-F430A08A
 function CCSelectProjectStyle() {
     global $CCProjectStyle;
     $QueryStyle = CCGetFromGet("style");
@@ -1686,9 +1563,7 @@ function CCSelectProjectStyle() {
     if (CCSetProjectStyle(CCGetSession("style")))
         return;
 }
-//End CCSelectProjectStyle
 
-//CCSetProjectStyle @0-E7A8832F
 function CCSetProjectStyle($NewStyle) {
     global $CCProjectStyle;
     $NewStyle = trim($NewStyle);
@@ -1698,9 +1573,7 @@ function CCSetProjectStyle($NewStyle) {
     }
     return false;
 }
-//End CCSetProjectStyle
 
-//CCSelectProjectDesign @0-2AB65882
 function CCSelectProjectDesign() {
     global $CCProjectDesign;
     $QueryDesign = CCGetFromGet("design");
@@ -1712,9 +1585,7 @@ function CCSelectProjectDesign() {
     if (CCSetProjectDesign(CCGetSession("design")))
         return;
 }
-//End CCSelectProjectDesign
 
-//CCSetProjectDesign @0-004D9DEA
 function CCSetProjectDesign($NewDesign) {
     global $CCProjectDesign;
     $NewDesign = trim($NewDesign);
@@ -1724,18 +1595,14 @@ function CCSetProjectDesign($NewDesign) {
     }
     return false;
 }
-//End CCSetProjectDesign
 
-//CCStrLen @0-E0F8B3E5
 function CCStrLen($str, $encoding = false) {
     global $FileEncoding;
     global $PHPVersion;
     if (false === $encoding) $encoding = $FileEncoding;
     return $encoding && $PHPVersion[0] >= 5 ? iconv_strlen($str, $encoding) : strlen($str);
 }
-//End CCStrLen
 
-//CCGetTemplate @0-14DD93C4
 function CCGetTemplate() {
     global $Tpl;
     $numargs = func_num_args();
@@ -1747,9 +1614,7 @@ function CCGetTemplate() {
     if (!isset($parent_page->Tpl) || !($parent_page->Tpl instanceof $TplClassName)) { return $Tpl; } 
     else { return $parent_page->Tpl; }
 }
-//End CCGetTemplate
 
-//CCInitializeDetails @0-95E75FA7
 function CCInitializeDetails(& $Component, $ComponentType)
 {
     global $MainPage;
@@ -1774,27 +1639,21 @@ function CCInitializeDetails(& $Component, $ComponentType)
     }
     return $Component->Validate();
 }
-//End CCInitializeDetails
 
-//CCSubStr @0-C7873BCA
 function CCSubStr($str, $offset, $length = null, $encoding = false) {
     global $FileEncoding;
     global $PHPVersion;
     if (false === $encoding) $encoding = $FileEncoding;
     return  $encoding && $PHPVersion[0] >= 5 ? (strlen($str) ? @iconv_substr($str, $offset, $length, $encoding) : "") : (is_null($length) ? substr($str, $offset) : substr($str, $offset, $length));
 }
-//End CCSubStr
 
-//CCStrPos @0-1EA48B0E
 function CCStrPos($haystack, $needle, $offset = 0, $encoding = false) {
     global $FileEncoding;
     global $PHPVersion;
     if (false === $encoding) $encoding = $FileEncoding;
     return  $encoding && $PHPVersion[0] >= 5 ? iconv_strpos($haystack, $needle, $offset, $encoding) : strpos($haystack, $needle, $offset);
 }
-//End CCStrPos
 
-//CCCheckSSL @0-A8E1366D
 function CCCheckSSL()
 {
     $HTTPS = isset($_SERVER["HTTPS"]) ? strtolower($_SERVER["HTTPS"]) : "";
@@ -1804,9 +1663,7 @@ function CCCheckSSL()
         exit;
     }
 }
-//End CCCheckSSL
 
-//GenerateCaptchaCode @0-BCA1E0E9
 function GenerateCaptchaCode($letters, $sesVariableName, $width, $height, $length, $rot, $br, $w1, $w2, $noise) {
     $restricted = "|cp|cb|ck|c6|c9|rn|rm|mm|co|do|cl|db|qp|qb|dp|";
     $res = new clsQuadraticPaths();
@@ -1839,10 +1696,8 @@ function GenerateCaptchaCode($letters, $sesVariableName, $width, $height, $lengt
     CCSetSession($sesVariableName, $code);
     return $res->ToString();
 }
-//End GenerateCaptchaCode
 
 
-//file_get_contents @0-4991CB3D
 if (!function_exists('file_get_contents')) {
     function file_get_contents($filename, $incpath = false, $resource_context = null)
     {
@@ -1863,21 +1718,15 @@ if (!function_exists('file_get_contents')) {
         return $data;
     }
 }
-//End file_get_contents
-/*
 
-*/
 
-#unset CCLoginUser;
 function CCLoginUser($login,$password){
 	if (CCGetSession("usr_login")){
-		echo CCGetSession("usr_login");//"$login $password";
-	} else {
+		echo CCGetSession("usr_login");	} else {
 		echo "No login";
 	}
 }
 
-//CCLogoutUser @0-9378664F
 function CCLogoutUser()
 {
     CCSetSession("UserID", "");
@@ -1887,45 +1736,15 @@ function CCLogoutUser()
 }
 
 function CCGetCurrentUrlPoint() {
-    $url = $_SERVER['REQUEST_URI']; //returns the current URL
-    $parts = explode('/',$url);
+    $url = $_SERVER['REQUEST_URI'];     $parts = explode('/',$url);
     $dir = $_SERVER['SERVER_NAME'];
     for ($i = 0; $i < count($parts) - 1; $i++) {
         $dir .= $parts[$i] . "/";
     }
     return $dir;
 }
-#override_function('CCLoginUser', '$login,$password', 'return override_login($login,$password);');
 
 
-/*
-# CARGA LOS INCLUDES DEL DIRECTORIO ./includes
 
-	function cmp($a, $b) {
-		return strcmp(strtolower($a), strtolower($b));
-	}
-
-	$IncludeDirectory="includes";
-	$myArr = array();
-	if (is_dir(RelativePath . "/$IncludeDirectory")) {
-		$custom_functions = opendir(RelativePath . "/$IncludeDirectory");
-		while (false!==($file_include = readdir($custom_functions)))
-		{
-			if($file_include!='.' && $file_include!='..')$myArr[]=$file_include;
-		}
-		closedir($custom_functions);
-
-		// sort the array! it's important WHEN the files are included
-		usort($myArr,"cmp");
-
-		foreach($myArr as $filename)
-		{
-			include_once(RelativePath . "/$IncludeDirectory/$filename");
-		}
-	}
-# ----------------------------------------------------------------------------------
-
-@include_once(RelativePath . PathToCurrentPage."SevenSL_modulo.config..php");
-*/
 
 ?>
