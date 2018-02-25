@@ -3,179 +3,124 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:11 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
 
-
-
-
-
 function openssl_pkey_free($key) { }
-
 
 function openssl_pkey_new(array $configargs = null) { }
 
-
 function openssl_pkey_export($key, &$out, $passphrase = null, array $configargs = null) { }
-
 
 function openssl_pkey_export_to_file($key, $outfilename, $passphrase = null, array $configargs = null) { }
 
-
 function openssl_pkey_get_private($key, $passphrase = "") { }
-
 
 function openssl_pkey_get_public($certificate) { }
 
-
 function openssl_pkey_get_details($key) { }
-
 
 function openssl_free_key($key_identifier) { }
 
-
 function openssl_get_privatekey($key, $passphrase) { }
-
 
 function openssl_get_publickey($certificate) { }
 
-
 function openssl_spki_new(&$privkey, &$challenge, $algorithm = 0) {}
-
-
 
 function openssl_spki_verify(&$spkac) {}
 
-
 function openssl_spki_export_challenge (&$spkac ) {}
-
 
 function openssl_spki_export (&$spkac ) {}
 
 function openssl_x509_read($x509certdata) { }
 
-
 function openssl_x509_fingerprint($x509, $type, $binary) {}
 
 function openssl_x509_free($x509cert) { }
 
-
 function openssl_x509_parse($x509cert, $shortnames = true) { }
-
 
 function openssl_x509_checkpurpose($x509cert, $purpose, array $cainfo = null, $untrustedfile = null) { }
 
-
 function openssl_x509_check_private_key($cert, $key) { }
-
 
 function openssl_x509_export($x509, &$output, $notext = true) { }
 
-
 function openssl_x509_export_to_file($x509, $outfilename, $notext = '&true;') { }
-
 
 function openssl_pkcs12_export($x509, &$out, $priv_key, $pass, array $args = null) { }
 
-
 function openssl_pkcs12_export_to_file($x509, $filename, $priv_key, $pass, array $args = null) { }
-
 
 function openssl_pkcs12_read($pkcs12, array &$certs, $pass) { }
 
-
 function openssl_csr_new(array $dn, &$privkey, array $configargs = null, array $extraattribs = null) { }
-
 
 function openssl_csr_export($csr, &$out, $notext = true) { }
 
-
 function openssl_csr_export_to_file($csr, $outfilename, $notext = true) { }
-
 
 function openssl_csr_sign($csr, $cacert, $priv_key, $days, array $configargs = null, $serial = 0) { }
 
-
 function openssl_csr_get_subject($csr, $use_shortnames = true) { }
-
 
 function openssl_csr_get_public_key($csr, $use_shortnames = true) { }
 
-
 function openssl_digest($data, $method, $raw_output = false) { }
-
 
 function openssl_encrypt($data, $method, $password, $raw_output = false, $iv = "") { }
 
-
 function openssl_decrypt($data, $method, $password, $raw_input = false, $iv = "") { }
-
 
 function openssl_cipher_iv_length($method) { }
 
-
 function openssl_sign($data, &$signature, $priv_key_id, $signature_alg = OPENSSL_ALGO_SHA1) { }
-
 
 function openssl_verify($data, $signature, $pub_key_id, $signature_alg = OPENSSL_ALGO_SHA1) { }
 
-
 function openssl_seal($data, &$sealed_data, array &$env_keys, array $pub_key_ids, $method = null) { }
-
 
 function openssl_open($sealed_data, &$open_data, $env_key, $priv_key_id, $method = null) { }
 
-
 function openssl_pbkdf2($password, $salt, $key_length, $iterations, $digest_algorithm) { }
-
 
 function openssl_pkcs7_verify($filename, $flags, $outfilename = null, array $cainfo = null, $extracerts = null, $content = null) { }
 
-
 function openssl_pkcs7_decrypt($infilename, $outfilename, $recipcert, $recipkey = null) { }
-
 
 function openssl_pkcs7_sign($infilename, $outfilename, $signcert, $privkey, array $headers, $flags = PKCS7_DETACHED, $extracerts = null) { }
 
-
 function openssl_pkcs7_encrypt($infile, $outfile, $recipcerts, array $headers, $flags = 0, $cipherid = OPENSSL_CIPHER_RC2_40) { }
-
 
 function openssl_private_encrypt($data, &$crypted, $key, $padding = OPENSSL_PKCS1_PADDING) { }
 
-
 function openssl_private_decrypt($data, &$decrypted, $key, $padding = OPENSSL_PKCS1_PADDING) { }
-
 
 function openssl_public_encrypt($data, &$crypted, $key, $padding = OPENSSL_PKCS1_PADDING) { }
 
-
 function openssl_public_decrypt($data, &$decrypted, $key, $padding = OPENSSL_PKCS1_PADDING) { }
-
 
 function openssl_get_md_methods($aliases = false) { }
 
-
 function openssl_get_cipher_methods($aliases = false) { }
-
 
 function openssl_dh_compute_key($pub_key, $dh_key) { }
 
-
 function openssl_random_pseudo_bytes($length, &$crypto_strong = null) { }
-
 
 function openssl_error_string() { }
 
@@ -188,7 +133,6 @@ define ('X509_PURPOSE_SMIME_SIGN', 4);
 define ('X509_PURPOSE_SMIME_ENCRYPT', 5);
 define ('X509_PURPOSE_CRL_SIGN', 6);
 define ('X509_PURPOSE_ANY', 7);
-
 
 define ('OPENSSL_ALGO_SHA1', 1);
 define ('OPENSSL_ALGO_MD5', 2);
@@ -203,27 +147,19 @@ define ('OPENSSL_ALGO_RMD160', 10);
 
 define ('PKCS7_DETACHED', 64);
 
-
 define ('PKCS7_TEXT', 1);
-
 
 define ('PKCS7_NOINTERN', 16);
 
-
 define ('PKCS7_NOVERIFY', 32);
-
 
 define ('PKCS7_NOCHAIN', 8);
 
-
 define ('PKCS7_NOCERTS', 2);
-
 
 define ('PKCS7_NOATTR', 256);
 
-
 define ('PKCS7_BINARY', 128);
-
 
 define ('PKCS7_NOSIGS', 4);
 define ('OPENSSL_PKCS1_PADDING', 1);
@@ -240,11 +176,7 @@ define ('OPENSSL_KEYTYPE_DSA', 1);
 define ('OPENSSL_KEYTYPE_DH', 2);
 define ('OPENSSL_KEYTYPE_EC', 3);
 
-
 define ('OPENSSL_TLSEXT_SERVER_NAME', 1);
-
-
-
 
 define('OPENSSL_CIPHER_AES_128_CBC', 5);
 

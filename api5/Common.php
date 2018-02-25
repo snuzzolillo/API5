@@ -3,21 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
 
 error_reporting(error_reporting() & (-1 ^ E_DEPRECATED));
 
@@ -69,7 +68,6 @@ $CCSLocales->AddLocale("es", Array("es", "ES", array(1, 0, ""), 2, ",", "."
 , array("H", ":", "nn"), array("H", ":", "nn", ":", "ss"), "", "", 1, false, "", "utf-8", "UTF-8", array(1, 7)));
 $CCSLocales->DefaultLocale = strtolower("es");
 $CCSLocales->Init();
-
 
 if ($PHPLocale = $CCSLocales->GetFormatInfo("PHPLocale"))
     setlocale(LC_ALL, $PHPLocale);
@@ -309,7 +307,6 @@ function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column 
     }
 }
 
-
   function CCParseValue($ParsingValue, $Format, $DataType, $ErrorClass, $FieldName, $isDBFormat = false)
   {
     global $CCSLocales;
@@ -379,7 +376,6 @@ function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column 
   }
 }
 
-
   function CCFormatValue($Value, $Format, $DataType, $isDBFormat = false)
   {
     switch($DataType)
@@ -403,7 +399,6 @@ function CCGetListValues(&$db, $sql, $where = "", $order_by = "", $bound_column 
     return $Value;
   }
 
-
 function CCBuildSQL($sql, $where = "", $order_by = "")
 {
     if (!$sql) return "";
@@ -417,7 +412,6 @@ function CCBuildSQL($sql, $where = "", $order_by = "")
     $sql .= $where . $order_by;
     return $sql;
 }
-
 
 function CCBuildInsert($table, & $Fields, & $Connection)
 {
@@ -438,7 +432,6 @@ function CCBuildInsert($table, & $Fields, & $Connection)
 
 }
 
-
 function CCBuildUpdate($table, & $Fields, & $Connection)
 {
     $pairs = array();
@@ -456,7 +449,6 @@ function CCBuildUpdate($table, & $Fields, & $Connection)
   return count($pairs) ? "UPDATE " . $table . " SET " . implode(", ", $pairs) : "";
 
 }
-
 
 function CCGetRequestParam($ParameterName, $Method, $DefaultValue = "")
 {
@@ -1113,7 +1105,6 @@ function CCValidateNumber($NumberValue, $FormatArray, $isDBFormat = false)
   return $is_valid;
 }
 
-
 function CCParseNumber($NumberValue, $FormatArray, $DataType, $isDBFormat = false)
 {
   $NumberValue = CCCleanNumber($NumberValue, $FormatArray, $isDBFormat);
@@ -1697,7 +1688,6 @@ function GenerateCaptchaCode($letters, $sesVariableName, $width, $height, $lengt
     return $res->ToString();
 }
 
-
 if (!function_exists('file_get_contents')) {
     function file_get_contents($filename, $incpath = false, $resource_context = null)
     {
@@ -1718,7 +1708,6 @@ if (!function_exists('file_get_contents')) {
         return $data;
     }
 }
-
 
 function CCLoginUser($login,$password){
 	if (CCGetSession("usr_login")){
@@ -1743,8 +1732,5 @@ function CCGetCurrentUrlPoint() {
     }
     return $dir;
 }
-
-
-
 
 ?>

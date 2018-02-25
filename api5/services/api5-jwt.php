@@ -3,26 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
-
-
-
-
 
 define("RelativePath", "..");
 define("PathToCurrentPage", "/services/");
@@ -37,7 +31,6 @@ $CONFIG = file_get_contents("../textdb/default.config.php");
 $CONFIG = json_decode_and_validate(clsCore::getSqlParsed(clsCore::sqlSplitFromStringWithTags($CONFIG,'config'),'config'),'API5');
 
 $key  = isset($CONFIG->tokenKey) ? $CONFIG->tokenKey : "";
-
 
 $generate = CCGetParam("generate");
 switch ($generate) {
@@ -61,8 +54,6 @@ switch ($generate) {
         die('BAD REQUEST');
 }
 
-
-
 $token = array(
     "iss" => "DOSQL"
     ,"sub" => "api5"
@@ -79,6 +70,5 @@ echo "JWT Encode<br><br>\n\n<pre>";
 echo $jwt."\n<br>";
 echo "<br></pre>CUT AND PAST INTO JAVASCRIPT TOKEN SECTION\n<br>";
 echo "THIS IS GENERATE ONLY FOR DEVELOPING PROPOUSE\n<br>";
-
 
 ?>

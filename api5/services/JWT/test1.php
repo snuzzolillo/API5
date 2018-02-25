@@ -3,27 +3,22 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:11 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
 
-
 require_once './Firebase/JWT.php';
-
-
-
-
 
 $key = "Enfasy";
 $token = array(
@@ -36,7 +31,6 @@ $token = array(
     ,"data" => '{"username":"", "userroles":[1,2]}'
 );
 
-
 $jwt = JWT::encode($token, $key);
 
 echo "Print Encode<br>\n";
@@ -46,14 +40,10 @@ $decoded = JWT::decode($jwt, $key, array('HS256'));
 echo "Print decoded<br>\n";
 print_r($decoded);
 
-
-
 echo "Print decoded Array<br>\n";
 
 $decoded_array = (array) $decoded;
 print_r($decoded_array);
-
-
 
 JWT::$leeway = 60; $decoded = JWT::decode($jwt, $key, array('HS256'));
 echo "Encode:\n" . print_r($jwt, true) . "\n";
@@ -65,25 +55,20 @@ echo "\n"
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:11 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
-
-
-
 
 $privateKey = <<<EOD
 -----BEGIN RSA PRIVATE KEY-----
@@ -112,13 +97,10 @@ ehde/zUxo6UvS7UrBQIDAQAB
 -----END PUBLIC KEY-----
 EOD;
 
-
 $jwt = JWT::encode($token, $privateKey, 'RS256');
 echo "Encode:\n" . print_r($jwt, true) . "\n";
 
 $decoded = JWT::decode($jwt, $publicKey, array('RS256'));
-
-
 
 $decoded_array = (array) $decoded;
 echo "Decode:\n" . print_r($decoded_array, true) . "\n";

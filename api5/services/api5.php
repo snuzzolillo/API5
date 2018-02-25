@@ -3,23 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
-
 
 set_error_handler("all_errors_handler", E_ALL);
 register_shutdown_function( "check_for_fatal" );
@@ -43,20 +40,16 @@ function all_errors_handler($errno, $errstr, $errfile, $errline) {
     error_manager(addslashes("API5 unhandled exception $errno:$errstr -> $errfile on $errline"), -20998);
 }
 
-
-
 define("RelativePath", "..");
 define("PathToCurrentPage", "/services/");
 define("FileName", "api5.php");
 
 require_once(RelativePath . "/Common.php");
 require_once(RelativePath . "/services/dosqlClasses.php");
+require_once(RelativePath . "/services/dosqlExceptions.php");
 include_once(RelativePath . "/services/cryptojs-aes/cryptojs-aes.php");
 include_once(RelativePath . "/services/cryptojs-aes/cryptojs-aes.php");
 require_once RelativePath . '/services/JWT/Firebase/JWT.php';
-
-
-
 
 global $CONFIG;
 $CONFIG = file_get_contents(RelativePath ."/textdb/default.config.php");
@@ -68,7 +61,6 @@ $AESpassPhrase  = isset($CONFIG->AESpassPhrase) ? $CONFIG->AESpassPhrase : "" ;
 $tokenKey       = isset($CONFIG->tokenKey) ? $CONFIG->tokenKey : "";
 
 $headers = apache_request_headers();
-
 
 if(isset($_SERVER["CONTENT_TYPE"]) && strpos($_SERVER["CONTENT_TYPE"], "application/json") !== false) {
         $_POST = array_merge($_POST, (array) json_decode(trim(file_get_contents('php://input')), true));
@@ -125,20 +117,16 @@ if ($token != "inside") {
             }
 }
 
-
-
-
-
-
 $resultAction   = CCGetParam("action", "all");
 $action         = CCGetParam("action", "all");
 $dataOnly         = (CCGetParam("dataonly", "false") === "false" ? false : true);
-
+$headerOnly       = (CCGetParam("headeronly", "false") === "false" ? false : true);
+$resultAction = $dataOnly ? 'dataonly' : ($headerOnly ? 'headeronly' : $action);
 $loginType      = strtoupper(CCGetParam("logintype", "LOCAL"));
 
-$SQL            = CCGetParam("SQL", "");
+$SQL            = CCGetFromPost("SQL", "");
 
-$BIND = CCGetParam("BIND","{}");
+$BIND = CCGetFromPost("BIND","{}");
 try {
     $BIND = json_decode($BIND);
     if (json_last_error()) {
@@ -155,14 +143,10 @@ $jsonStyle          = strtoupper(CCGetParam("jsonstyle", "OBJECT"));
 
 $includeResult      = CCGetParam("icluderesult", "1");
 $includeInfo        = CCGetParam("icludeinfo", "1");
-$includeHeader      = CCGetParam("icludeheader", "1");
+$includeHeader      = (CCGetParam("icludeheader", "false") === "false" ? false : true);
 $includeError       = CCGetParam("includeerror", "1");
 
-
-
 $transactiontype    = strtoupper(CCGetParam("transactiontype", CCGetParam("__transaction_type","QUERY")));
-
-
 
 $_SESSION["CONNECTED"] =  array();
 $_SESSION["CONNECTED"][$sourceName] = new stdClass();
@@ -174,7 +158,6 @@ if ($sourceName != 'default'
     error_manager("NOT CONNECTED TO DATABASE '.$sourceName.'.",2);
 }
 
-
 if (!$SQL and !($transactiontype == 'LOGIN' and ($loginType == 'DATABASE' or $loginType == 'OS'))) {
     error_manager('NON SQL ','SYS-'.'10');
 }
@@ -182,7 +165,6 @@ if (!$SQL and !($transactiontype == 'LOGIN' and ($loginType == 'DATABASE' or $lo
     if (!$sourceName) {
         error_manager('No datasource (or sourcename) defined ','SYS-'.'11');     }
 
-    
 if (!file_exists("../textdb/" . $sourceName . ".sources.json.php")) {
     error_manager('Source name (sourcename or datasource) \"'.$sourceName. '\" do not exists.', 'SYS-'.'12');
 }
@@ -193,9 +175,7 @@ if (json_last_error()) {
 }
 $CCConnectionSettings[$sourceName] = $datasource;
 
-
 $DBmetadata = new clsDBdefault();
-
 
 if ($transactiontype == 'LOGIN') {
         APILoginUser($SQL, $loginType);
@@ -218,21 +198,12 @@ if ($transactiontype == 'LOGIN') {
         $ContentType = "application/json";
     $Charset = $Charset ? $Charset : "utf-8";
     $PathToRoot = "../";
-    
-            
-    
-    
-                
-                            
-    
-            
-    
+
         $Result = new clsSqlResult(""
                 , $sourceSQL
         , ''         , $SorterName, $SorterDirection);
 
         $Result->Initialize();
-
 
     if ($action == "headeronly") {
 
@@ -246,9 +217,7 @@ if ($transactiontype == 'LOGIN') {
         );
     }
 
-
         $Result->Show();
-    
 
     if ($action == "dataonly" or $dataOnly) {
                         clsCore::returnJson($Result->Records, false, false, false, false, $Result->Records);
@@ -258,13 +227,11 @@ if ($transactiontype == 'LOGIN') {
         clsCore::returnJson(
                 $Result->Records         , $includeError ? '{"CODE":"0", "MESSAGE" : "SUCCESS"}' : false         , '{"RECORDS_COUNT":"' . $Result->DataSource->RecordsCount . '", "CURRENT_PAGENUMBER":"' . $Result->PageNumber . '", "CURRENT_PAGESIZE":"' . (strtoupper($Result->PageSize) == 'ALL' ? $Result->RowNumber : $Result->PageSize) . '" }'         , $includeHeader ? $Result->Metadata->colsbyname : false     );
 
-    
 } else if ($transactiontype == "DML" ){
 
     $Result = new clsDMLResult($SQL);
 
     die;
-
 
 } else if ($transactiontype == "TABLE" ){
     clsCore::sqlTableOperation();
@@ -294,9 +261,7 @@ function changeFunctions(&$in_obj, &$sec, &$value_arr, &$replace_keys) {
 function MetaStandardType($DBtype, $DATAtype, $DATAscale = 0) {
 		switch ($DBtype) {
 		case "ORACLE" : switch($DATAtype) {
-															
-																											
-																											
+
 			case "2":  
 								if ($DATAscale > 0) return ccsFloat; else return ccsInteger;
 				break;
@@ -407,7 +372,6 @@ function MetaStandardType($DBtype, $DATAtype, $DATAscale = 0) {
 	return null;	
 }
 
-
 function mysqliMetadata(& $db) {   
 	$id 	= $db->Query_ID;
 	$META = new stdClass();
@@ -434,10 +398,6 @@ function mysqliMetadata(& $db) {
 		$META->cols[ $i ]->{"precision"}    = $property->decimals;
 		$META->cols[ $i ]->{"scale"}	    = $property->decimals;
 		$META->cols[ $i ]->{"is_null"}      = !(MYSQLI_NOT_NULL_FLAG & $property->flags) ;        $META->cols[ $i ]->{"primary_key"}  = !(!(MYSQLI_PRI_KEY_FLAG & $property->flags)) ;        $META->cols[ $i ]->{"auto_increment"} = !(!(MYSQLI_AUTO_INCREMENT_FLAG & $property->flags)) ;		$i++;
-																						
-										
-						
-																																																
 
 																  	}
         	return $META;
@@ -447,7 +407,6 @@ function oracleMetadata(& $db) {
 	$id 	= $db->Query_ID;
 	$META = new stdClass();
 
-		
 	$META->cols = array();
 	for($ix=1;$ix<=OCINumcols($id);$ix++) {
 		$col 			= oci_field_name($id, $ix);
@@ -474,8 +433,7 @@ function oracleMetadata(& $db) {
 		
 																			}   
 	return $META;  
-	
-	
+
 }                     
 		
 function metadata(& $db, $SQL) {
@@ -573,7 +531,6 @@ function mysqlDescribe(& $db, $table) {
         }
         $standarType 	= MetaStandardType("MYSQLDESC",$type);
 
-
         $META->colsbyname[ "$col" ] = new stdClass();
         $META->colsbyname[ "$col" ]->{"type"}  	        = $standarType;
         $META->colsbyname[ "$col" ]->{"type_raw"}       = $type;
@@ -584,7 +541,6 @@ function mysqlDescribe(& $db, $table) {
         $META->colsbyname[ "$col" ]->{"flags"} 	        = null;
         $META->colsbyname[ "$col" ]->{"primary_key"}    = ($db->f("key") == "PRI" ? true : false);
         $META->colsbyname[ "$col" ]->{"auto_increment"} = (strpos($db->f("extra"), 'auto_increment') === false ? false : true);
-
 
         $META->cols[ $ix ] = new stdClass();
         $META->cols[ $ix ]->{"type"}  	            = $standarType;
@@ -604,7 +560,6 @@ function mysqlDescribe(& $db, $table) {
 
 function extratTablesOnSQL($SQL) {
 
-    
     function getListTable($text) {
 
         $text = preg_replace('/\s+/S', " ", $text);         $text = preg_replace('/\n\s*\n/', "\n", $text);
@@ -699,7 +654,6 @@ function json_validate($string,$flag=false)
         $string = str_replace("\n", "", $string);
     $string = str_replace("\r", "", $string);
     $string = str_replace("\t", " ", $string);
-
 
         $result = json_decode($string, $flag);
 
@@ -814,6 +768,11 @@ function error_manager($msg, $code=3, $type= '', $status = 400)
     } else {
         $e->{'DB_TYPE'} = "";
     }
+    if ($type=="DB") {
+        $exceptions = new sqlExceptions();
+        $e->{'EXCEPTION'} = $exceptions->getException($code,$e->{'DB_TYPE'});
+    }
+
     die(json_encode($e));
 }
 
@@ -921,7 +880,6 @@ function end_of_line($text, $i) {
 
 function getFromWhere($text, & $levels, $tagOpen = '(', $tagClosed = ')', $level=0, $groupOpen = '', $groupClose = ''  ) {
 
-    
     $usingGroup = ($groupOpen ? true : false);
     $inGroup    = 0;
     $max        = strlen($text);
@@ -1005,11 +963,9 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
 
             $db = new clsDBdefault();
 
-            
                         $SQL = clsCore::getSqlParsed($sqlParsed, "LOGIN");
             $SQL = clsCore::sqlSetParameters(
                 $db                                 , $SQL                              , $bind                         );
-
 
             $db->query($SQL);
 
@@ -1028,7 +984,6 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
 
                 $SQL = clsCore::sqlSetParameters(
                     $db                                     , $SQL                                  , $bind                             );
-
 
                 $db->query($SQL);
                 while (clsCore::simplifyNextRecord($db)) {
@@ -1061,7 +1016,6 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
         case "OS" :
             $authorized = false;
 
-                                                                                                
                         $file = dirname(__FILE__). "/.htpasswd";
 
             function crypt_apr1_md5($plainpasswd, $crypted) {
@@ -1177,7 +1131,6 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
                 .', "userroles":'.(is_array($SYSTEM->USERROLES) ? json_encode($SYSTEM->ROLES) : '"'.$SYSTEM->USERROLES.'"' ).'}'
         );
 
-        
         $jwt = JWT::encode($token, $CONFIG->tokenKey);
         $PARAMETERS->{"PARAMETERS.TOKEN"} = new stdClass();
         $PARAMETERS->{"PARAMETERS.TOKEN"}->value = $jwt;

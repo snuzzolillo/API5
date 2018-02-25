@@ -3,22 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
 
 $SYSTEM     = new stdClass(); $GLOBALS    = new stdClass(); $PARAMETERS = new stdClass(); $BINDED     = new stdClass(); $BINDED_IN_SQL = array(); 
 $SYSTEM->{"SYSDATE"}     = 'date';
@@ -44,7 +42,6 @@ class clsCore {
             if (empty($block))
                 continue;
 
-            
                         if (strpos($block, 'application/octet-stream') !== FALSE)
             {
                                 preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
@@ -58,6 +55,22 @@ class clsCore {
         return $a_data;
     }
 
+    public static function extractOrderBy($SQL, $type='')
+    {
+                                        $result = array();
+        $re = "/ORDER BY.*?(?=\\s*LIMIT|\\)|$)/mi";
+        $matches = array();
+                preg_match_all($re, $SQL, $matches);
+                if (isset($matches[0]) && isset($matches[0][1])) {
+            $last = $matches[0][count($matches[0])-1];
+            $result[0] = strrev(preg_replace(strrev("/$last/"),strrev(""),strrev($SQL),1));
+            $result[1] = str_ireplace("ORDER BY ", "", $last);
+        } else {
+            $result[0] = $SQL;
+            $result[1] = "";
+        }
+        return $result;
+    }
     public static function validateSqlStatement($SQL, $type)
     {
                                                 if (strtoupper($type) == 'TABLE') {
@@ -195,7 +208,6 @@ class clsCore {
         },array_change_key_case($arr, $case));
     }
 
-
     public static function sqlTableOperation() {
                                                                                 global $CCConnectionSettings;
                                                                 
@@ -204,14 +216,12 @@ class clsCore {
         $operation_type     = CCGetParam("__operation_type", "none");
         $pk                 = CCGetParam("__pk", "none");
         $row_id             = CCGetParam("__row_id", "");         
-                
-                                        
+
         $error = false;
         $lastkey = "";
         $lastSQL = "";
         $db = new clsDBdefault();
-        
-                                                        
+
         $DATA = array();
                                                 foreach ($_POST as $v => $val) {
             if (!in_array($v, $exclude_from_data) and !(substr($v, 0, 2) == "__")) {
@@ -490,8 +500,7 @@ class clsCore {
     }
 
     public static function sqlSplitFromStringWithTags($text, $tag='sql'){
-        
-        
+
         $plsqlParsed = array();
                                 $start_tag = "/*";
         $end_tag = "*/";
@@ -548,8 +557,7 @@ class clsCore {
     }
 
     public static function sqlBindVariables($currenString = "", $bind) {
-                                                
-                                
+
                 global $CCConnectionSettings;
         global $sourceName;
                 global $SYSTEM;
@@ -588,7 +596,6 @@ class clsCore {
             }
         }
 
-                
         foreach($bind as $j => $n) {
             $ok = false;
             foreach ($arr[1] as $i => $var) {
@@ -601,8 +608,7 @@ class clsCore {
                 $arr[1][] = $j;
             }
         }
-                        
-                
+
                 foreach ($arr[1] as $i => $name) {
             $new_name = strtoupper($name);
             if (strpos($new_name, '.') === false) {
@@ -616,7 +622,6 @@ class clsCore {
             $arr = array_unique($arr[1]);
         } else $arr = array();
 
-                                
         $PARAMETERS = new stdClass();
         foreach ($bind as $i => $val) {
             $new_name = strtoupper($i);
@@ -648,7 +653,6 @@ class clsCore {
 
         $BINDED = $arr;
 
-        
         if ($DB_TYPE == "MySQL") {
             foreach ($arr as $i => $toBind) {
                                                                 
@@ -677,14 +681,9 @@ class clsCore {
         global $BINDED;
 
         $DB_TYPE = $CCConnectionSettings[$sourceName]["Type"];
-                                                
-        
-                        
 
         if ($DB_TYPE == "Oracle") {
-                                    
-                                    
-            
+
                                                             global $BINDED_IN_SQL;
 
             foreach ($BINDED_IN_SQL as $i => $inSQL) {
@@ -700,8 +699,6 @@ class clsCore {
                     };
                 }
 
-
-                                                                
                 $param  = trim(str_replace(',', '', $toBind));
                 $varname = substr($param,strpos($param,'.')+1, 1000);
                                 $value =
@@ -734,7 +731,7 @@ class clsCore {
                                                         : error_manager('Unbinded variable "' . (isset($PARAMETERS->{$varname}) ? $PARAMETERS->{$varname}->original_name : $toBind) . '"', 20003)
                         )));
                 $mysql_param = str_replace('.','_',$param);
-                $db->query("set @". $mysql_param ." = " . CCToSQL($value, ccsText).';');
+                                $db->query("set @". $mysql_param ." = " . CCToSQL($value, ccsText).';');
                                 
                 if ($db->Errors->toString()) {
                     error_manager('Error binding values "' . $db->Errors->toString(), 20003);
@@ -754,7 +751,6 @@ class clsCore {
 
         if ($DB_TYPE == "Oracle") {
 
-                                                
                         foreach ($PARAMETERS as $toBind => $obj) {
                 $param = trim(str_replace(',', '', $toBind));
                 $oracle_param = str_replace('.', '_', $param);
@@ -804,10 +800,8 @@ class clsCore {
         global $GLOBALS;
         global $BINDED;
 
-
         $DB_TYPE = $CCConnectionSettings[$sourceName]["Type"];
 
-        
         $result = new stdClass();
 
                                 foreach($PARAMETERS as $var => $obj) {
@@ -845,7 +839,6 @@ class clsDBdefault extends DB_Adapter
             $this->DBPassword = $password;
                     }
                 $this->Initialize();
-        
 
     }
 
@@ -869,32 +862,29 @@ class clsDBdefault extends DB_Adapter
 
     function OptimizeSQL($SQL)
     {
-                if (strtoupper($this->PageSize) == 'ALL') return $SQL;
+                if (strtoupper($this->PageSize) == 'ALL') {
+            return $SQL;
+        }
         $PageSize = (int) $this->PageSize;
         if (!$PageSize) return $SQL;
         $Page = $this->AbsolutePage ? (int) $this->AbsolutePage : 1;
 
-        
-        if ($this->Type == "Oracle") {
+        if (strtoupper($this->Type) == "ORACLE") {
             $SQL = "SELECT a.*, rownum a_count_rows FROM (".$SQL.") a where rownum <= ".(($Page) * $PageSize);
             $SQL = "SELECT * from (".$SQL.") where a_count_rows > ".(($Page - 1) * $PageSize)."";
 
-        } else if ($this->Type == "MySql" or $this->Type == "MySQL") {
+        } else if (strtoupper($this->Type) == "MYSQL") {
             if (strcmp($this->RecordsCount, "CCS not counted")) {
-                $SQL = "SELECT * FROM (".$SQL.") a ". (" LIMIT " . (($Page - 1) * $PageSize) . "," . $PageSize);
+                                $SQL = $SQL. (" LIMIT " . (($Page - 1) * $PageSize) . "," . $PageSize);
                                             } else {
-                $SQL = "SELECT * FROM (".$SQL.") a ". (" LIMIT " . (($Page - 1) * $PageSize) . "," . ($PageSize + 1));
+                                $SQL = $SQL. (" LIMIT " . (($Page - 1) * $PageSize) . "," . $PageSize);
                             }
         }
         return $SQL;
     }
 }
 
-
-
-
 class clsSqlResult {
-
 
                 public $Metadata;
     public $Query;
@@ -907,11 +897,8 @@ class clsSqlResult {
     public $SorterDirection = "";
     public $PageNumber;
     public $RowNumber;
-    
-        
+
     public $RelativePath = "";
-    
-            
 
     function __construct($RelativePath
                 , $Query, $WhereCondition, $SorterName, $SorterDirection) {
@@ -933,13 +920,11 @@ class clsSqlResult {
 
         $this->DataSource->Where = $WhereCondition;
 
-
                                                                                 $this->Metadata = metadata($this->DataSource, $this->Query);
 
-                        
-                                                        
                                                                 $this->PageSize = CCGetParam("pagesize", CCGetParam("buffersize", CCGetParam('lote','ALL')));         if (strtoupper($this->PageSize) == "ALL") {
-            $this->PageNumber = intval(1);
+            $this->PageSize = 1000;
+            $this->PageNumber = CCGetParam("pagenum", CCGetParam("buffernum", CCGetParam('numlote','1')));             $this->PageNumber = intval($this->PageNumber);
         } else {
             $this->PageSize = intval($this->PageSize);
             $this->PageNumber = CCGetParam("pagenum", CCGetParam("buffernum", CCGetParam('numlote','1')));             $this->PageNumber = intval($this->PageNumber);
@@ -1019,9 +1004,15 @@ class clsSqlResult {
     function Open()
     {
         global $transactiontype;
-                                        $this->DataSource->SQL = $this->Query ." {SQL_Where} {SQL_OrderBy}";
+                                
+                $re = "/ORDER BY.*?(?=\\s*LIMIT|\\)|$)/mi";
+        $SQL = preg_replace($re, "", $this->Query);
 
-        
+                        $ORDER= str_replace($SQL,"",$this->Query);
+                $this->DataSource->Order = str_ireplace("ORDER BY ", "", $ORDER);
+        $this->Query = $SQL;
+                                $this->DataSource->SQL = $this->Query ." {SQL_Where} {SQL_OrderBy}";
+
         $this->DataSource->CountSQL = "SELECT COUNT(*) from (\n\n" . $this->Query .") aszalst";
                 if ($this->DataSource->CountSQL)
             $this->DataSource->RecordsCount = CCGetDBValue(CCBuildSQL($this->DataSource->CountSQL, $this->DataSource->Where, ""), $this->DataSource);
@@ -1039,10 +1030,6 @@ class clsSqlResult {
 }
 
 class clsDMLResult {
-
-
-    
-
 
     function __construct($SQL) {
         $this->exectuteDMLStatement($SQL);
@@ -1068,13 +1055,11 @@ class clsDMLResult {
 
         $db = new clsDBdefault();
 
-        
         $DB_TYPE = $db->Type;
 
         $lastkey = "";
         if ($DB_TYPE == "Oracle") {
 
-                                                                        
             preg_match_all("/\\INSERT INTO\s*([a-zA-Z0-9_.]+)/ise", $SQL, $arr);
 
             $insertTable = false;
@@ -1095,9 +1080,7 @@ class clsDMLResult {
                 error_manager($db->Errors->ToString(), -20101);
             }
 
-                                                
                         clsCore::getBindValues($db);
-            
 
                         $result = clsCore::getBindResult($db);
 

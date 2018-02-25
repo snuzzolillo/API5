@@ -3,25 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
-
-      
- 
 
 class DB_OracleOCI {
   public $Debug    =  0;
@@ -46,7 +41,6 @@ class DB_OracleOCI {
 
   public $Error     = "";
 
-  
   function DB_Sql($query = "") {
   }
 
@@ -152,7 +146,6 @@ class DB_OracleOCI {
       if ($this->Error["code"] != 0 && $this->sqoe) {
           $this->Halt($this->Error, $Query_String );
       }
-      
 
       if(sizeof($this->Binds) > 0)
       {
@@ -171,7 +164,6 @@ class DB_OracleOCI {
 
             set_error_handler("all_errors_handler", E_ALL);
       return $this->Query_ID;
-
 
   }
   
@@ -224,8 +216,6 @@ class DB_OracleOCI {
       $count = 0;
       $id    = 0;
       $res   = array();
-      
-    
 
       $this->connect();
 
@@ -261,7 +251,6 @@ class DB_OracleOCI {
       if ($full) $res["num_fields"]=$i;
       return $res;
   }
-
 
   function affected_rows() {
     return $this->num_rows();
@@ -342,7 +331,6 @@ class DB_OracleOCI {
       OCILogoff($this->Link_ID);
   }
 
-
   function free_result() {
     @ocifreestatement($this->Query_ID);
     $this->Query_ID = 0;
@@ -408,7 +396,5 @@ class DB_OracleOCI {
     return str_replace("'", "''", $value);     
   }
 }
-
-
 
 ?>

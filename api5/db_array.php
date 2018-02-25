@@ -3,24 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
-
- 
 
 class DB_Array {
   public $DBDatabase = "";
@@ -46,8 +42,7 @@ class DB_Array {
   public $Stored_Query = 0;
   public $Child_Field  = "children";
   public $Parents      = array();
-    
-  
+
   function DB_Sql($query = "") {
       $this->query($query);
   }
@@ -146,7 +141,5 @@ class DB_Array {
   }
 
 }
-
-
 
 ?>

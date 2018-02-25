@@ -3,24 +3,20 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
-
-
-
-
 
 define("ccsLabel",           1);
 define("ccsLink",            2);
@@ -43,7 +39,6 @@ $ControlTypes = array(
   "Button","CheckBox","Image","ImageLink","Hidden","CheckBoxList",
   "DatePicker", "ReportLabel","ReportPageBreak"
 );
-
 
 define("opEqual",              1);
 define("opNotEqual",           2);
@@ -72,8 +67,6 @@ define("dsEmpty",        5);
 
 define("ccsChecked", true);
 define("ccsUnchecked", false);
-
-
 
 function CCCheckValue($Value, $DataType)
 {
@@ -135,7 +128,6 @@ class clsControl
   public $prevCountValueRelative;
   public $prevSumValueRelative;
 
-
   public $Value = "";
   public $Text;
   public $EmptyText;
@@ -148,7 +140,6 @@ class clsControl
   public $Parent;
 
   public $Attributes;
-
 
   function __construct($ControlType, $Name, $Caption, $DataType, $Format, $InitValue = "", & $Parent)
   {
@@ -688,9 +679,7 @@ class clsControl
     $this->prevSumValueRelative = "";
   }
 
-
 }
-
 
 class clsField
 {
@@ -834,7 +823,6 @@ class clsField
     return $returnNull && $this->IsNull ? NULL : $this->DBValue;
   }
 }
-
 
 class clsErrors
 {
@@ -986,7 +974,6 @@ class clsLocaleInfo {
   }
 }
 
-
 class clsLocale {
   public $Name;
   public $Dir;
@@ -1057,7 +1044,6 @@ class clsLocale {
 
   }
 }
-
 
 class clsLocales {
   public $Locale;
@@ -1190,8 +1176,6 @@ class clsLocales {
 
 }
 
-
-
 class clsMainPage
 {
   public $ComponentType = "Page";
@@ -1227,7 +1211,6 @@ class clsAttribute {
   function GetParsedValue($ParsingValue, $MaskFormat) {
     return CCParseValue($ParsingValue, $MaskFormat, $this->DataType, "", "");
   }
-
 
   function GetFormattedValue($MaskFormat) {
       return CCFormatValue($this->Value, $MaskFormat, $this->DataType);

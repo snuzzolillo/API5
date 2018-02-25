@@ -3,29 +3,23 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:10 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
 
-
-
-
- 
-
 class DB_MySQLi {
-  
-  
+
   public $DBHost     = "";
   public $DBPort     = 0;
   public $DBSocket   = "";
@@ -34,39 +28,29 @@ class DB_MySQLi {
   public $DBPassword = "";
   public $Persistent = false;
   public $Case       = CASE_LOWER;
-  
 
-  
   public $Auto_Free     = 1;       public $Debug         = 0;       public $Seq_Table     = "db_sequence";
 
-  
   public $Record   = array();
   public $Row;
 
-  
   public $Errno    = 0;
   public $Error    = "";
     public $SqlState = "";
 
-  
   public $type     = "mysql";
   public $revision = "1.2";
 
-  
   public $Link_ID  = 0;
   public $Query_ID = 0;
   public $Connected = false;
 
   public $Encoding = "";
-  
 
-
-  
   function DB_Sql($query = "") {
       $this->query($query);
   }
 
-  
   function link_id() {
     return $this->Link_ID;
   }
@@ -95,7 +79,6 @@ class DB_MySQLi {
     return $this->Connected;
   }
 
-  
   function connect($DBDatabase = "", $DBHost = "", $DBPort = 0, $DBSocket="", $DBUser = "", $DBPassword = "") {
     
     if ("" == $DBDatabase)   $DBDatabase = $this->DBDatabase;
@@ -104,20 +87,24 @@ class DB_MySQLi {
     if ("" == $DBHost)       $DBHost     = $this->DBHost;
     if ("" == $DBUser)       $DBUser     = $this->DBUser;
     if ("" == $DBPassword)   $DBPassword = $this->DBPassword;
-      
 
-    
     if (!$this->Connected) {
-      $this->Query_ID  = 0;    
+
+      restore_error_handler();
+
+      $this->Query_ID  = 0;
       $this->Link_ID = @mysqli_connect($DBHost, $DBUser, $DBPassword, $DBDatabase, $DBPort, $DBSocket);
 
       if (!$this->Link_ID) {
           $msg["code"] =  "2";
-                    $msg["message"] = "mysqli_connect($DBHost, $DBUser, \$DBPassword, $DBDatabase, $DBPort, $DBSocket) failed.";
-          $this->halt($msg);
+          
+          $msg["message"] = "mysqli_connect($DBHost, $DBUser, \$DBPassword, $DBDatabase, $DBPort, $DBSocket) failed.";
+          $this->halt($msg, '');
 
                   return 0;
       }
+      set_error_handler("all_errors_handler", E_ALL);
+
       $server_info = @mysqli_get_server_info($this->Link_ID);
       preg_match("/\d+\.\d+(\.\d+)?/", $server_info, $matches);
       $version_str = $matches[0];
@@ -135,9 +122,6 @@ class DB_MySQLi {
     return $this->Link_ID;
   }
 
-
-
-  
   function free_result() {
     if (is_resource($this->Query_ID)) {
       @mysqli_free_result($this->Query_ID);
@@ -145,7 +129,6 @@ class DB_MySQLi {
     $this->Query_ID = 0;
   }
 
-  
   function query($Query_String) {
     
     if ($Query_String == "")
@@ -189,7 +172,6 @@ class DB_MySQLi {
         return $this->Query_ID;
   }
 
-  
   function next_record() {
     if (!$this->Query_ID) 
       return 0;
@@ -211,7 +193,6 @@ class DB_MySQLi {
     return $stat;
   }
 
-  
   function seek($pos = 0) {
     $status = @mysqli_data_seek($this->Query_ID, $pos);
     if ($status) {
@@ -219,14 +200,12 @@ class DB_MySQLi {
     } else {
       $this->Errors->addError("Database error: seek($pos) failed -  result has ".$this->num_rows()." rows");
 
-      
       @mysqli_data_seek($this->Query_ID, $this->num_rows());
       $this->Row = $this->num_rows();
     }
     return true;
   }
 
-  
   function lock($table, $mode="write") {
     $this->connect();
     
@@ -262,8 +241,6 @@ class DB_MySQLi {
     return $res;
   }
 
-
-  
   function affected_rows() {
     return @mysqli_affected_rows($this->Link_ID);
   }
@@ -276,7 +253,6 @@ class DB_MySQLi {
     return @mysqli_num_fields($this->Query_ID);
   }
 
-  
   function nf() {
     return $this->num_rows();
   }
@@ -293,7 +269,6 @@ class DB_MySQLi {
     print $this->Record[$Name];
   }
 
-  
   function nextid($seq_name) {
     $this->connect();
     
@@ -304,8 +279,7 @@ class DB_MySQLi {
                 $seq_name);
       $id  = @mysqli_query($this->Link_ID, $q);
       $res = @mysqli_fetch_array($id);
-      
-      
+
       if (!is_array($res)) {
         $currentid = 0;
         $q = sprintf("insert into %s values('%s', %s)",
@@ -341,10 +315,9 @@ class DB_MySQLi {
       }
     }
 
-    
     function halt($msg, $query) {
       $msg["message"] = str_replace(array("\\", '"', "/", "\n" , "\r", "\t", "\b"), array("\\\\", '\"', '\/', '\\n', '', '\t', '\b'), $msg["message"]);
-      error_manager($msg["message"], $msg["code"], 'DB');
+      error_manager($msg["message"] . ' '.$query, $msg["code"], 'DB');
   }
 
   function table_names() {
@@ -371,7 +344,5 @@ class DB_MySQLi {
   }
 
 }
-
-
 
 ?>

@@ -3,31 +3,26 @@
 /*
  +-----------------------------------------------------------------------+
  | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2007-2018, Santo Nuzzolillo                             |
+ | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
  |                                                                       |
  | Licensed under the GNU General Public License version 3 or            |
  | any later version with exceptions for skins & plugins.                |
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
- | Pduction                                                              |
- |   Date   : 02/16/2018                                                 |
- |   Time   : 12:47:27 PM                                                |
+ | Production                                                            |
+ |   Date   : 02/25/2018                                                 |
+ |   Time   : 10:44:11 AM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
  +-----------------------------------------------------------------------+
 */
 
-
-
-
 class JWT
 {
 
-    
     public static $leeway = 0;
 
-    
     public static $timestamp = null;
 
     public static $supported_algs = array(
@@ -39,7 +34,6 @@ class JWT
         'RS512' => array('openssl', 'SHA512'),
     );
 
-    
     public static function decode($jwt, $key, array $allowed_algs = array())
     {
         $timestamp = is_null(static::$timestamp) ? time() : static::$timestamp;
@@ -104,7 +98,6 @@ class JWT
         return $payload;
     }
 
-    
     public static function encode($payload, $key, $alg = 'HS256', $keyId = null, $head = null)
     {
         $header = array('typ' => 'JWT', 'alg' => $alg);
@@ -125,7 +118,6 @@ class JWT
         return implode('.', $segments);
     }
 
-    
     public static function sign($msg, $key, $alg = 'HS256')
     {
         if (empty(static::$supported_algs[$alg])) {
@@ -146,7 +138,6 @@ class JWT
         }
     }
 
-    
     private static function verify($msg, $signature, $key, $alg)
     {
         if (empty(static::$supported_algs[$alg])) {
@@ -183,7 +174,6 @@ class JWT
         }
     }
 
-    
     public static function jsonDecode($input)
     {
         if (version_compare(PHP_VERSION, '5.4.0', '>=') && !(defined('JSON_C_VERSION') && PHP_INT_SIZE > 4)) {
@@ -204,7 +194,6 @@ class JWT
         return $obj;
     }
 
-    
     public static function jsonEncode($input)
     {
         $json = json_encode($input);
@@ -216,7 +205,6 @@ class JWT
         return $json;
     }
 
-    
     public static function urlsafeB64Decode($input)
     {
         $remainder = strlen($input) % 4;
@@ -227,13 +215,11 @@ class JWT
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
-    
     public static function urlsafeB64Encode($input)
     {
         return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
 
-    
     private static function handleJsonError($errno)
     {
         $messages = array(
@@ -249,7 +235,6 @@ class JWT
         );
     }
 
-    
     private static function safeStrlen($str)
     {
         if (function_exists('mb_strlen')) {
@@ -266,7 +251,6 @@ class BeforeValidException extends UnexpectedValueException
 
                         $this->error_manager($e, -3);
     }
-
 
     function BeforeValidException($e)
     {
@@ -296,7 +280,6 @@ class ExpiredException extends UnexpectedValueException
         error_manager("BAD REQUEST $msg", $code);
                     }
 }
-
 
 class SignatureInvalidException extends UnexpectedValueException
 {
