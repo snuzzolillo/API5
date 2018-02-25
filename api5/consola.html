@@ -101,8 +101,8 @@
         $.ajaxSetup({
                 headers: {"Authorization": "token="+localStorage.getItem('token')}
         });
-        var test = 3;
-        var ejemplo = 112;
+        var test = 111;
+        var ejemplo = 13;
         var treeTest = "";
         if (test === 1) {
             // ---------------------------------------------------------
@@ -748,6 +748,30 @@
                     //,buffersize : 10
                     //, pagenum : 11
                     //, includeheader : false
+                }
+                ,success : function(result){
+                    // en este caso result ya es un objeto JS
+                    console.log(result);
+                }
+                ,error : function(xhr,status,msg){
+                    var error = xhr.responseJSON;
+                    console.log(error.CODE,'-',error.MESSAGE, error.TYPE);
+                }
+            });
+            // -------------------------------------------
+        }
+        if (ejemplo == 13) {
+            // JAVASCRIPT
+            //TEST WITH JQUERY
+            jQuery.ajax({
+                //url :'http://localhost/proyectos/api5-prod/api5/services/api5.php'
+                url :'http://localhost/proyectos/api5/services/api5.php'
+                ,type :'post'
+                ,data : {
+                    SQL: ":app.example/1"
+                    ,transactiontype : 'QUERY'
+                    ,BIND : JSON.stringify({hire_date:'1985-02-28', gender:'F'})
+                    ,pagesize : 10
                 }
                 ,success : function(result){
                     // en este caso result ya es un objeto JS

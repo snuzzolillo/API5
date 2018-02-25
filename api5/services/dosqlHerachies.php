@@ -11,7 +11,7 @@
  |                                                                       |
  | Production                                                            |
  |   Date   : 02/25/2018                                                 |
- |   Time   : 10:44:11 AM                                                |
+ |   Time   : 03:57:51 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -124,10 +124,7 @@ Class clsHierarchiesResult {
     function hierarchiesRequestByNodeType($SQL = '')
     {
 
-        if (substr($SQL,0,1) == ':') {
-            $sqlParsed = clsCore::sqlSplitFromFile(substr($SQL,1));
-                                    $SQL = clsCore::getSqlParsed($sqlParsed);
-        }
+                                                        $SQL = getSentenceByMethod($SQL);
 
                         global $BIND;
         $bind = $BIND;
@@ -153,12 +150,9 @@ Class clsHierarchiesResult {
 
     function hierarchiesRequestSimple($SQL = '')
     {
-        
-                                                                                                                                                                                        if (substr($SQL,0,1) == ':') {
-            $sqlParsed = clsCore::sqlSplitFromFile(substr($SQL,1));
-                        $SQL = clsCore::getSqlParsed($sqlParsed);
-        }
-                
+
+                $SQL = getSentenceByMethod($SQL);
+
                                         global $BIND;
         $bind = $BIND;
 
@@ -215,10 +209,7 @@ Class clsHierarchiesResult {
     function hierarchiesRequestMD($JSON = '')
     {
 
-        if (substr($JSON,0,1) == ':') {
-            $sqlParsed = clsCore::sqlSplitFromFile(substr($JSON,1));
-                                    $JSON = clsCore::getSqlParsed($sqlParsed);
-        }
+                $SQL = getSentenceByMethod($JSON);
 
                                                 $Relation = json_decode_and_validate($JSON,"hierarchiesRequestMD in hierarchiesRequest bad json");
         $Relation = clsCore::normalizeJSONObjectAttrName($Relation);
@@ -428,10 +419,7 @@ Class clsHierarchiesResult {
         global $BIND;
         $bind = $BIND;
 
-        if (substr($JSON,0,1) == ':') {
-            $sqlParsed = clsCore::sqlSplitFromFile(substr($JSON,1));
-                                    $JSON = clsCore::getSqlParsed($sqlParsed);
-        }
+                $SQL = getSentenceByMethod($JSON);
 
         $Relation = json_decode_and_validate($JSON,"hierarchiesRequestTEST in hierarchiesRequest bad json");
         $Relation = clsCore::normalizeJSONObjectAttrName($Relation);

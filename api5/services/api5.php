@@ -11,7 +11,7 @@
  |                                                                       |
  | Production                                                            |
  |   Date   : 02/25/2018                                                 |
- |   Time   : 10:44:10 AM                                                |
+ |   Time   : 03:57:51 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -143,7 +143,7 @@ $jsonStyle          = strtoupper(CCGetParam("jsonstyle", "OBJECT"));
 
 $includeResult      = CCGetParam("icluderesult", "1");
 $includeInfo        = CCGetParam("icludeinfo", "1");
-$includeHeader      = (CCGetParam("icludeheader", "false") === "false" ? false : true);
+$includeHeader      = (CCGetParam("icludeheader", "true") === "false" ? fasle : true);
 $includeError       = CCGetParam("includeerror", "1");
 
 $transactiontype    = strtoupper(CCGetParam("transactiontype", CCGetParam("__transaction_type","QUERY")));
@@ -181,7 +181,10 @@ if ($transactiontype == 'LOGIN') {
         APILoginUser($SQL, $loginType);
     die;
 } else if ($transactiontype == 'QUERY') {
-                $sourceSQL = clsCore::sqlBindVariables($SQL, $BIND);
+            
+        $SQL = getSentenceByMethod($SQL);
+
+    $sourceSQL = clsCore::sqlBindVariables($SQL, $BIND);
     
                 $Tpl = "";
     $TemplateFileName = "";
@@ -955,8 +958,8 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
 
     switch(strtoupper($loginType)) {
         case "LOCAL" :
-                                                                        
-            if (substr($SQL, 0, 1) == ':') {
+
+                        if (substr($SQL, 0, 1) == ':') {
                                 $sqlParsed = clsCore::sqlSplitFromFile(substr($SQL, 1));
                                                 $SQL = clsCore::getSqlParsed($sqlParsed, "LOGIN");
             }

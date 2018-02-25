@@ -1,24 +1,20 @@
 <?php
+#require_once './Firebase/BeforeValidException.php';
+#require_once './Firebase/ExpiredException.php';
+#require_once './Firebase/SignatureInvalidException.php';
+require_once './Firebase/JWT.php';
+#require_once './JWT.php';
+
+#use \Firebase\JWT\JWT;
 
 /*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 10:44:11 AM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
+ * aud values debera validarse segun la descripcion de cada aud
+ *  "demo" :
+ *  "databaseadmin" :
+ *  "developer" :
+ *  "dataexchange":
+ */
 
-require_once './Firebase/JWT.php';
 
 $key = "Enfasy";
 $token = array(
@@ -26,11 +22,19 @@ $token = array(
     ,"sub" => "api5"
     ,"aud" => "developer"
     ,"iat" => time()
-    ,"exp" => time()+ (7 * 24 * 60 * 60)     ,"nbf" => 1357000000
-        ,"uid" => "developer"
+    ,"exp" => time()+ (7 * 24 * 60 * 60) // A week
+    ,"nbf" => 1357000000
+    ## STANDARS
+    ,"uid" => "developer"
     ,"data" => '{"username":"", "userroles":[1,2]}'
 );
 
+/**
+ * IMPORTANT:
+ * You must specify supported algorithms for your application. See
+ * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40
+ * for a list of spec-compliant algorithms.
+ */
 $jwt = JWT::encode($token, $key);
 
 echo "Print Encode<br>\n";
@@ -40,35 +44,52 @@ $decoded = JWT::decode($jwt, $key, array('HS256'));
 echo "Print decoded<br>\n";
 print_r($decoded);
 
+/*
+ NOTE: This will now be an object instead of an associative array. To get
+ an associative array, you will need to cast it as such:
+*/
+
 echo "Print decoded Array<br>\n";
 
 $decoded_array = (array) $decoded;
 print_r($decoded_array);
 
-JWT::$leeway = 60; $decoded = JWT::decode($jwt, $key, array('HS256'));
+
+/**
+ * You can add a leeway to account for when there is a clock skew times between
+ * the signing and verifying servers. It is recommended that this leeway should
+ * not be bigger than a few minutes.
+ *
+ * Source: http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#nbfDef
+ */
+JWT::$leeway = 60; // $leeway in seconds
+$decoded = JWT::decode($jwt, $key, array('HS256'));
 echo "Encode:\n" . print_r($jwt, true) . "\n";
 echo "\n"
 ?>
     Example with RS256 (openssl)
 <?php
 
-/*
- +-----------------------------------------------------------------------+
- | This file is part of API5 RESTful SQLtoJSON                           |
- | Copyright (C) 2017-2018, Santo Nuzzolillo                             |
- |                                                                       |
- | Licensed under the GNU General Public License version 3 or            |
- | any later version with exceptions for skins & plugins.                |
- | See the LICENSE file for a full license statement.                    |
- |                                                                       |
- | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 10:44:11 AM                                                |
- |   Version: 0.0.1                                                      |
- +-----------------------------------------------------------------------+
- | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
- +-----------------------------------------------------------------------+
-*/
+## #############################################################################
+### GENERATE PTIVATE KEY -- Necesita OPENSSL configurado en el servidor
+## #############################################################################
+/*$config = array(
+    "digest_alg" => "sha512",
+    "private_key_bits" => 4096,
+    "private_key_type" => OPENSSL_KEYTYPE_RSA,
+);
+
+// Create the private and public key
+$res = openssl_pkey_new($config);
+
+// Extract the private key from $res to $privKey
+openssl_pkey_export($res, $privateKey);
+
+// Extract the public key from $res to $pubKey
+$publicKey = openssl_pkey_get_details($res);
+$publicKey = $publicKey["key"];*/
+## #############################################################################
+
 
 $privateKey = <<<EOD
 -----BEGIN RSA PRIVATE KEY-----
@@ -97,10 +118,23 @@ ehde/zUxo6UvS7UrBQIDAQAB
 -----END PUBLIC KEY-----
 EOD;
 
+/*
+$token = array(
+    "iss" => "example.org",
+    "aud" => "example.com",
+    "iat" => 1356999524,
+    "nbf" => 1357000000
+);
+*/
 $jwt = JWT::encode($token, $privateKey, 'RS256');
 echo "Encode:\n" . print_r($jwt, true) . "\n";
 
 $decoded = JWT::decode($jwt, $publicKey, array('RS256'));
+
+/*
+ NOTE: This will now be an object instead of an associative array. To get
+ an associative array, you will need to cast it as such:
+*/
 
 $decoded_array = (array) $decoded;
 echo "Decode:\n" . print_r($decoded_array, true) . "\n";

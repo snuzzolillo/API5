@@ -11,7 +11,7 @@
  |                                                                       |
  | Production                                                            |
  |   Date   : 02/25/2018                                                 |
- |   Time   : 10:44:10 AM                                                |
+ |   Time   : 03:57:51 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -206,6 +206,22 @@ class clsCore {
                 $item = clsCore::normalizeObjectAttrName($item);
             return $item;
         },array_change_key_case($arr, $case));
+    }
+
+    function getSentenceByMethod($SQL) {
+        $SQL = trim($SQL);
+        if (substr($SQL, 0, 1) == ':') {
+                                                                                                                                                $x = mbsplit('/', substr($SQL,1));
+            $file = $x[0];
+            $name = "1";
+            if (isset($x[1])) {
+                                $name = $x[1];
+            }
+                                    $sqlParsed = clsCore::sqlSplitFromFile($file);
+            
+                        return clsCore::getSqlParsed($sqlParsed, $name);
+        }
+        return $SQL;
     }
 
     public static function sqlTableOperation() {
@@ -507,12 +523,12 @@ class clsCore {
         preg_match_all('#/\*(.*?)\*/#s', $text, $matches);
                         
         foreach ($matches[1] as $i => $code) {
-                        $string = clsCore::normalize_tags(trim($code), $tag);
+                                    $string = clsCore::normalize_tags(trim($code), $tag);
             
                         $xml = clsCore::checkXmlString($string);
             
             if ($xml) {
-                $json = json_encode($xml);
+                                $json = json_encode($xml);
                                 $json = clsCore::normalizeJSONObjectAttrName($json);
                                 $obj = json_decode($json);
                 $name = (isset($obj->{"@attributes"}->name) ? strtoupper($obj->{"@attributes"}->name) : "ANONYMOUS");
@@ -543,10 +559,15 @@ class clsCore {
     }
 
     public static function getSqlParsed($sqlParsed, $name = '1'){
-                        if ($name === '1') {
-                        foreach ($sqlParsed as $name => $data) {
-                $SQL = $data->body;
-                return $SQL;             }
+                        if (is_numeric($name)) {
+                        $n = 0;
+            foreach ($sqlParsed as $index => $data)
+            {
+                $n++;
+                if ($n == $name) {
+                    $SQL = $data->body;
+                    return $SQL;                 }
+            }
         } else {
                         $name = strtoupper($name);
             if (isset($sqlParsed[$name])) {
@@ -1043,10 +1064,7 @@ class clsDMLResult {
     function exectuteDMLStatement($SQL = '')
     {
                                 
-        if (substr($SQL, 0, 1) == ':') {
-            $sqlParsed = clsCore::sqlSplitFromFile(substr($SQL, 1));
-            $SQL = clsCore::getSqlParsed($sqlParsed);
-        }
+                $SQL = getSentenceByMethod($SQL);
 
                                 global $transactiontype;
         clsCORE::validateSqlStatement($SQL, $transactiontype);
