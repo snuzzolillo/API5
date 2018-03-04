@@ -10,8 +10,8 @@
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
  | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 03:57:51 PM                                                |
+ |   Date   : 03/04/2018                                                 |
+ |   Time   : 05:37:54 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -109,6 +109,8 @@ class clsCore {
         global $CCConnectionSettings;
         global $sourceName;
         global $resultAction;
+        global $includeData;
+        global $transactiontype;
         
                 $ContentType    = "application/json";
         $Charset        = $Charset ? $Charset : "utf-8";
@@ -157,7 +159,9 @@ class clsCore {
                 $result->{'INFO'} = ((!is_object($info) and !is_array($info)) ? json_decode($info) : $info);
                 $result->INFO->{"DB_TYPE"} = $CCConnectionSettings[$sourceName]["Type"];
             }
-            if ($data)      $result->{'DATA'} = ((!is_object($data) and !is_array($data)) ? json_decode($data) : $data);
+            if ($data or (in_array($transactiontype, ['QUERY', 'HRCHY']) and $includeData)) {
+                $result->{'DATA'} = ((!is_object($data) and !is_array($data)) ? json_decode($data) : $data);
+            }
             if ($binded)    $result->{'RESULT'} = ((!is_object($binded) and !is_array($binded)) ? json_decode($binded) : $binded);
 
         }
@@ -208,7 +212,7 @@ class clsCore {
         },array_change_key_case($arr, $case));
     }
 
-    function getSentenceByMethod($SQL) {
+    public static function getSentenceByMethod($SQL) {
         $SQL = trim($SQL);
         if (substr($SQL, 0, 1) == ':') {
                                                                                                                                                 $x = mbsplit('/', substr($SQL,1));
@@ -603,7 +607,7 @@ class clsCore {
 
                                                                                         global $BINDED_IN_SQL;
         $BINDED_IN_SQL = $arr[1];
-                
+
         foreach ($arr[1] as $i => $var) {
             $ok = false;
             foreach($bind as $j => $n) {
@@ -635,7 +639,8 @@ class clsCore {
             if (strpos($new_name, '.') === false) {
                 $new_name = 'PARAMETERS.' . $new_name;
             }
-            $currenString = trim(str_replace(':' . $name, ':' . $new_name, $currenString));
+                                                            $regx = preg_quote(':'.$name,'/');
+            $currenString = trim(preg_replace('/'.$regx.'\b/mi', ':' . $new_name, $currenString));
             $arr[1][$i] = $new_name;
         }
 
@@ -643,15 +648,19 @@ class clsCore {
             $arr = array_unique($arr[1]);
         } else $arr = array();
 
-        $PARAMETERS = new stdClass();
+                if (!is_object($PARAMETERS)) $PARAMETERS = new stdClass();
+
         foreach ($bind as $i => $val) {
             $new_name = strtoupper($i);
             if (strpos($new_name, '.') === false) {
                 $new_name = 'PARAMETERS.' . $new_name;
             }
-            $PARAMETERS->{$new_name} = new stdClass();
-            $PARAMETERS->{$new_name}->original_name = $i;
-            $PARAMETERS->{$new_name}->value = $val;
+
+                        if (!isset($PARAMETERS->{$new_name})) {
+                $PARAMETERS->{$new_name} = new stdClass();
+                $PARAMETERS->{$new_name}->original_name = $i;
+                $PARAMETERS->{$new_name}->value = $val;
+            }
             $tt = gettype($val);
             switch ($tt) {
                 case 'integer' :
@@ -674,19 +683,40 @@ class clsCore {
 
         $BINDED = $arr;
 
+                $rolesList = "";
+        if (is_array($SYSTEM->USERROLES)) {
+            foreach($SYSTEM->USERROLES as $e) {
+                $rolesList .= ($rolesList ? "," :  "").CCToSql($e,ccsText);
+            }
+        }
+
         if ($DB_TYPE == "MySQL") {
             foreach ($arr as $i => $toBind) {
-                                                                
+
                 $param = trim(str_replace(',', '', $toBind));
                 $mysql_param = str_replace('.', '_', $param);
-                $currenString = str_replace(':' . $param, '@' . $mysql_param, $currenString);
+                
+                                                $regx = preg_quote(':'.$param,'\b/');
+                                if ($param == 'SYSTEM.USERROLES') {
+                                        $currenString = trim(preg_replace('/'.$regx.'/mi', $rolesList, $currenString));
+                    
+                } else {
+                    $currenString = trim(preg_replace('/' . $regx . '\b/mi', '@' . $mysql_param, $currenString));
+                }
+
             }
         } else if ($DB_TYPE == "Oracle") {
             foreach ($arr as $i => $toBind) {
                                                                 
                 $param = trim(str_replace(',', '', $toBind));
                                 $oracle_param = str_replace('.','_',$param);
-                                $currenString = str_replace(':' . $param, ':' . $oracle_param, $currenString);
+
+                                                $regx = preg_quote(':'.$param,'\b/');
+                if ($param == 'SYSTEM.USERROLES') {
+                                                            $currenString = trim(preg_replace('/'.$regx.'\b/mi', $rolesList, $currenString));
+                                    } else {
+                    $currenString = trim(preg_replace('/' . $regx . '/mi', ':' . $oracle_param, $currenString));
+                }
             }
         }
         return $currenString;
@@ -725,7 +755,7 @@ class clsCore {
                                 $value =
                     (
                                         strpos($toBind, 'PARAMETERS.') !== false ? (isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value : error_manager('Unbinded PARAMETER variable "' . $varname . '"', 20005))
-                        : (strpos($toBind, 'SYSTEM.') !== false ? (isset($SYSTEM->{$varname}) ? : error_manager("Unbinded SYSTEM variable \"" . $varname . "\"", 20004))
+                        : (strpos($toBind, 'SYSTEM.') !== false ? (isset($SYSTEM->{$varname}) ? $SYSTEM->{$varname} : error_manager("Unbinded SYSTEM variable \"" . $varname . "\"", 20004))
                         : (strpos($toBind, 'GLOBAL.') !== false ? $GLOBALS->{$varname}
                             : isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value
                             : error_manager('Unbinded variable "' . $PARAMETERS->{$varname}->original_name . '"', 20003)
@@ -746,16 +776,19 @@ class clsCore {
                 $value      =
                     (
                     strpos($toBind, 'PARAMETERS.') !== false ? (isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value : error_manager('Unbinded PARAMETER variable "' . $varname . '"', 20005))
-                        : (strpos($toBind, 'SYSTEM.') !== false ? (isset($SYSTEM->{$varname}) ? : error_manager('Undefined SYSTEM variable "' . $varname . '"', 20004))
+                        : (strpos($toBind, 'SYSTEM.') !== false ? (isset($SYSTEM->{$varname}) ? $SYSTEM->{$varname} : error_manager('Undefined SYSTEM variable "' . $varname . '"', 20004))
                         : (strpos($toBind, 'GLOBAL.') !== false ? $GLOBALS->{$varname}
                             : isset($PARAMETERS->{$toBind}) ? $PARAMETERS->{$toBind}->value
                                                         : error_manager('Unbinded variable "' . (isset($PARAMETERS->{$varname}) ? $PARAMETERS->{$varname}->original_name : $toBind) . '"', 20003)
                         )));
-                $mysql_param = str_replace('.','_',$param);
-                                $db->query("set @". $mysql_param ." = " . CCToSQL($value, ccsText).';');
-                                
-                if ($db->Errors->toString()) {
-                    error_manager('Error binding values "' . $db->Errors->toString(), 20003);
+                if (is_array($value)) {
+                                                        } else {
+                    $mysql_param = str_replace('.', '_', $param);
+                                        $db->query("set @" . $mysql_param . " = " . CCToSQL($value, ccsText) . ';');
+                                        
+                    if ($db->Errors->toString()) {
+                        error_manager('Error binding values "' . $db->Errors->toString(), 20003);
+                    }
                 }
             }
             return;
@@ -1064,7 +1097,7 @@ class clsDMLResult {
     function exectuteDMLStatement($SQL = '')
     {
                                 
-                $SQL = getSentenceByMethod($SQL);
+                $SQL = clsCore::getSentenceByMethod($SQL);
 
                                 global $transactiontype;
         clsCORE::validateSqlStatement($SQL, $transactiontype);

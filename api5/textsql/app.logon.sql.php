@@ -7,7 +7,7 @@ SELECT user_id userid
 , case when superuser = 1 then 'ADMIN' else 'USER' end roles
 into :userid
   ,:username
-  ,:roles
+  ,:role
 FROM users
 where email = :email
 and   password = md5(:password)
@@ -17,7 +17,7 @@ and   password = md5(:password)
 /*
 <sql type="QUERY" name="ROLES">
 select role
-from user_roles
+from users_roles
 where username = :username;
 </sql>
 */

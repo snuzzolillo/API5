@@ -10,8 +10,8 @@
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
  | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 03:57:51 PM                                                |
+ |   Date   : 03/04/2018                                                 |
+ |   Time   : 05:37:54 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -74,6 +74,12 @@ class DB_MySQLi {
     $this->Link_ID = @mysqli_connect($DBHost, $DBUser, $DBPassword, $DBDatabase, $DBPort, $DBSocket);
     $this->Connected = $this->Link_ID ? true : false;
 
+    if (mysqli_connect_errno()) {
+      $msg["code"] = mysqli_connect_errno() ;
+      $msg["message"] = mysqli_connect_error();
+      $this->halt($msg, '');
+    }
+
         set_error_handler("all_errors_handler", E_ALL);
 
     return $this->Connected;
@@ -94,6 +100,12 @@ class DB_MySQLi {
 
       $this->Query_ID  = 0;
       $this->Link_ID = @mysqli_connect($DBHost, $DBUser, $DBPassword, $DBDatabase, $DBPort, $DBSocket);
+
+      if (mysqli_connect_errno()) {
+        $msg["code"] = mysqli_connect_errno() ;
+        $msg["message"] = mysqli_connect_error();
+        $this->halt($msg, '');
+      }
 
       if (!$this->Link_ID) {
           $msg["code"] =  "2";
@@ -116,7 +128,7 @@ class DB_MySQLi {
           @mysqli_query($this->Link_ID, "set character set '" . $this->Encoding[0] . "'");
       }
 
-      $this->Connected = true;
+                        $this->Connected = true;
     }
     
     return $this->Link_ID;
@@ -317,7 +329,8 @@ class DB_MySQLi {
 
     function halt($msg, $query) {
       $msg["message"] = str_replace(array("\\", '"', "/", "\n" , "\r", "\t", "\b"), array("\\\\", '\"', '\/', '\\n', '', '\t', '\b'), $msg["message"]);
-      error_manager($msg["message"] . ' '.$query, $msg["code"], 'DB');
+      error_manager($msg["message"] . ' '
+                      , $msg["code"], 'DB');
   }
 
   function table_names() {

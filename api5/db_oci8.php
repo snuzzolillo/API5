@@ -10,8 +10,8 @@
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
  | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 03:57:51 PM                                                |
+ |   Date   : 03/04/2018                                                 |
+ |   Time   : 05:37:54 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -84,7 +84,7 @@ class DB_OracleOCI {
 
           if (!$this->Link_ID) {
               $this->Error=OCIError();
-              $this->Halt($this->Error);
+                                                        $this->Halt($this->Error);
                             return 0;
           }
 

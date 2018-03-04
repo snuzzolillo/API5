@@ -2,7 +2,7 @@
   "Type"          : "MySQL",
   "DBLib"         : "MySQLi",
   "Database"      : "employees",
-  "Host"          : "192.168.0.39",
+  "Host"          : "192.168.1.39",
   "Port"          : "3306",
   "User"          : "demo",
   "Password"      : "onlyfordemo",

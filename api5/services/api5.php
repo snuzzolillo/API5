@@ -10,8 +10,8 @@
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
  | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 03:57:51 PM                                                |
+ |   Date   : 03/04/2018                                                 |
+ |   Time   : 05:37:54 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -67,6 +67,27 @@ if(isset($_SERVER["CONTENT_TYPE"]) && strpos($_SERVER["CONTENT_TYPE"], "applicat
     $_POST = array_merge($_POST, clsCore::parse_raw_http_request());
                 }
 
+header('Content-type:application/json;charset=utf-8');
+ini_set('memory_limit', '-1');
+set_time_limit(0); 
+if(true) {
+        if (!isset($_SERVER["HTTP_REFERER"])) {
+        error_manager(1);
+    }
+    if (!isset($_SERVER["HTTP_X_REQUESTED_WITH"])) {
+        error_manager('non Ajax request detected from ' . $_SERVER["HTTP_REFERER"] . ' to ' . $_SERVER["HTTP_HOST"], 2);
+    }
+
+    $REFER = parse_url($_SERVER["HTTP_REFERER"], PHP_URL_HOST);
+    if (!$REFER === $_SERVER["HTTP_HOST"]) {
+        error_manager(3);
+    }
+    $XRF = $_SERVER["HTTP_X_REQUESTED_WITH"];
+    if (!strtoupper($XRF) === "XMLHTTPREQUEST") {
+        error_manager('bad Ajax request detected', 4);
+            }
+}
+
 $token = CCGetFromPost("token", "");
 
 if (!$token) {
@@ -79,43 +100,95 @@ if (!$token) {
     }
 }
 
-header('Content-type:application/json;charset=utf-8');
-ini_set('memory_limit', '-1');
-set_time_limit(0); 
+$transactiontype    = strtoupper(CCGetParam("transactiontype", CCGetParam("__transaction_type","QUERY")));
 
-if (!$token and $CONFIG->tokenRequired) {
-    error_manager('Auhorization : Token required ', "SYS-5");
-}
+if ($transactiontype == 'LOGIN') {
+        CCSetSession("USERID", '0');
+    CCSetSession("USERNAME", 'ANONYMOUS');
+    CCSetSession("USERROLE", 'ANONYMOUS');
+    CCSetSession("USERROLES", ['ANONYMOUS']);
+} else {
+        
+    if (strtoupper($CONFIG->authenticationsessionvariable) != "NONE") {
+                        if (!$token and $CONFIG->tokenRequired) {
+            error_manager('Auhorization : Token required ', "5", "API");
+        }
 
-if ($token != "inside") {
         if ($CONFIG->tokenRequired) {
-        $decoded = JWT::decode($token, $tokenKey, array('HS256'));
-        try {
-                        $appData = json_decode($decoded->data);
-            if (json_last_error()) {
-                throw new Exception ('JSON ERROR ' . json_last_error());
+                                    if ($CONFIG->tokenRequired) {
+                $tokenDecoded = JWT::decode($token, $tokenKey, array('HS256'));
+                if (isset($tokenDecoded->data)) try {
+                                        $appData = clsCore::normalizeJSONObjectAttrName($tokenDecoded->data);
+                    $appData = json_decode($appData);
+                    if (json_last_error()) {
+                        throw new Exception ('JSON ERROR ' . json_last_error());
+                    }
+                                                                                                                    } catch (Exception $e) {
+                    error_manager('Unmanaged Error ( ' . $e . ')', 20001);
+                } else {
+                    $appData = new stdClass();
+                }
+                                CCSetSession('USERID', $tokenDecoded->uid);
+                                                CCSetSession('USERNAME', ((isset($appData->username) and $appData->username)
+                        ? $appData->username
+                        : CCGetSession('USERID')
+                    )
+                );
+                                $role = "";
+                $roles = array();
+                if (isset($appData->userroles) and is_array($appData->userroles)) {
+                    $role = $appData->userroles[0];
+                    $roles = $appData->userroles;
+                }
+
+                if (isset($appData->userroles) and $appData->userroles) {
+                                        $x = array();
+                    if (!is_array($appData->userroles)) $x = explode(',', $appData->userroles);
+                                        else $x = $appData->userroles;
+                    if (is_array($x)) {
+                        $role = $x[0];
+                        $roles = $x;
+                    } else {
+                        $role = $appData->userroles;
+                        $roles = [$appData->userroles];
+                    }
+                }
+                if (!$role) {
+                    $role = 'ANONYMOUS';
+                    $roles = [$role];
+                }
+
+                CCSetSession('USERROLE', $role);
+                CCSetSession('USERROLES', $roles);
+                unset($role);
+                unset($roles);
+                unset($appData);
+                unset($tokenDecoded);
+                            }
+        } else {
+                                    if (isset($_SESSION['USERID']) and $_SESSION['USERID'] > '0') {
+                                                CCSetSession('USERNAME', CCGetSession('USERNAME', CCGetSession('USERID')));
+                CCSetSession('USERROLE', CCGetSession('USERROLE', 'ANONYMOUS'));
+                CCSetSession('USERROLES', CCGetSession('USERROLES'), array('ANONYMOUS'));
             }
-                                            } catch (Exception $e) {
-            error_manager('Unmanaged Error ( ' . $e . ')', 20001);
+        }
+
+        if (!CCGetSession('USERID')) {
+            error_manager('Auhorization : Invalid Credential ', "6", "API");
         }
     }
-    
-    if (!isset($_SERVER["HTTP_REFERER"])) {
-        error_manager(1);
+    else {
+                CCSetSession("USERID", '0');
+        CCSetSession("USERNAME", 'ANONYMOUS');
+        CCSetSession("USERROLE", 'ANONYMOUS');
+        CCSetSession("USERROLES", ['ANONYMOUS']);
     }
-    if (!isset($_SERVER["HTTP_X_REQUESTED_WITH"])) {
-        error_manager('non Ajax request detected from '.$_SERVER["HTTP_REFERER"].' to '.$_SERVER["HTTP_HOST"],2);
     }
-
-    $REFER = parse_url($_SERVER["HTTP_REFERER"], PHP_URL_HOST);
-    if (!$REFER === $_SERVER["HTTP_HOST"]) {
-        error_manager(3);
-    }
-    $XRF = $_SERVER["HTTP_X_REQUESTED_WITH"];
-    if (!strtoupper($XRF) === "XMLHTTPREQUEST") {
-        error_manager('bad Ajax request detected',4);
-            }
-}
+$SYSTEM = new stdClass();
+$SYSTEM->USERID = CCGetSession("USERID");
+$SYSTEM->USERNAME = CCGetSession("USERNAME");
+$SYSTEM->USERROLE = CCGetSession("USERROLE");
+$SYSTEM->USERROLES = CCGetSession("USERROLES");
 
 $resultAction   = CCGetParam("action", "all");
 $action         = CCGetParam("action", "all");
@@ -146,7 +219,9 @@ $includeInfo        = CCGetParam("icludeinfo", "1");
 $includeHeader      = (CCGetParam("icludeheader", "true") === "false" ? fasle : true);
 $includeError       = CCGetParam("includeerror", "1");
 
-$transactiontype    = strtoupper(CCGetParam("transactiontype", CCGetParam("__transaction_type","QUERY")));
+$includeData         = (CCGetParam("includedata", ($transactiontype == 'QUERY' or $transactiontype == 'HRCHY')
+                            ? "true"
+                            : "false")  === "false" ? false : true);
 
 $_SESSION["CONNECTED"] =  array();
 $_SESSION["CONNECTED"][$sourceName] = new stdClass();
@@ -182,10 +257,10 @@ if ($transactiontype == 'LOGIN') {
     die;
 } else if ($transactiontype == 'QUERY') {
             
-        $SQL = getSentenceByMethod($SQL);
+        $SQL = clsCore::getSentenceByMethod($SQL);
 
     $sourceSQL = clsCore::sqlBindVariables($SQL, $BIND);
-    
+
                 $Tpl = "";
     $TemplateFileName = "";
     $BlockToParse = "";
@@ -746,12 +821,14 @@ function json_decode_and_validate($string,$in_case_error,$flag=false)
         return $result;
 }
 
-function error_manager($msg, $code=3, $type= '', $status = 400)
+function error_manager($msg, $code=3, $type=false, $status = 400,$exception = false)
 {
     global $sourceName;
     global $CCConnectionSettings;
-    if (!$type) $type = 'API';
-    $r = new stdClass();
+    $status = (!$status) ? 400 : intval($status);
+    $type = (!$type) ? "API" : $type;
+    $exception = (!$exception) ? "OTHER" : $exception;
+        $r = new stdClass();
     if ($status==200) {
         $r->{'ERROR'} = new stdClass();
     }
@@ -774,6 +851,8 @@ function error_manager($msg, $code=3, $type= '', $status = 400)
     if ($type=="DB") {
         $exceptions = new sqlExceptions();
         $e->{'EXCEPTION'} = $exceptions->getException($code,$e->{'DB_TYPE'});
+    } else {
+        $e->{'EXCEPTION'} = $exception;
     }
 
     die(json_encode($e));
@@ -946,20 +1025,14 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
     global $BIND;
     global $PARAMETERS;
 
-        CCSetSession('USERNAME', null);
-    CCSetSession('USERID', null );
-    CCSetSession('ROLES', null);
-    global $SYSTEM;
-    $SYSTEM->{'USERNAME'} = CCGetSession('USERNAME');
-    $SYSTEM->{'USERID'} = CCGetSession('USERID');
-    $SYSTEM->{'ROLES'} = CCGetSession('ROLES');
-        
+                    global $SYSTEM;
+                    
     $bind = is_object($BIND) ? $BIND : new stdClass();
 
     switch(strtoupper($loginType)) {
         case "LOCAL" :
 
-                        if (substr($SQL, 0, 1) == ':') {
+                                                                                                if (substr($SQL, 0, 1) == ':') {
                                 $sqlParsed = clsCore::sqlSplitFromFile(substr($SQL, 1));
                                                 $SQL = clsCore::getSqlParsed($sqlParsed, "LOGIN");
             }
@@ -980,20 +1053,23 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
 
             if (isset($sqlParsed["ROLES"])) {
                                 $SQL = clsCore::getSqlParsed($sqlParsed, "roles");
-
                                                 $bind->{'username'} = $PARAMETERS->{"PARAMETERS.USERNAME"}->value;
                 $bind->{'userid'}   = $PARAMETERS->{"PARAMETERS.USERID"}->value;
-                $bind->{'roles'}   = $PARAMETERS->{"PARAMETERS.ROLES"}->value;
+                                $bind->{'userrole'}   = $PARAMETERS->{"PARAMETERS.USERROLE"}->value;
 
                 $SQL = clsCore::sqlSetParameters(
                     $db                                     , $SQL                                  , $bind                             );
 
+                                $PARAMETERS->{"PARAMETERS.USERROLES"} = new stdClass();
+                $PARAMETERS->{"PARAMETERS.USERROLES"}->value = [$PARAMETERS->{"PARAMETERS.USERROLE"}->value];
+                $PARAMETERS->{"PARAMETERS.USERROLES"}->original_name = 'userroles';
+
                 $db->query($SQL);
                 while (clsCore::simplifyNextRecord($db)) {
-                    if (!is_array($PARAMETERS->{"PARAMETERS.ROLES"}->value))
-                        $PARAMETERS->{"PARAMETERS.ROLES"}->value = array();
+                    if (!is_array($PARAMETERS->{"PARAMETERS.USERROLES"}->value))
+                        $PARAMETERS->{"PARAMETERS.USERROLES"}->value = array();
 
-                    $PARAMETERS->{"PARAMETERS.ROLES"}->value[] = $db->Record['role'];
+                    $PARAMETERS->{"PARAMETERS.USERROLES"}->value[] = $db->Record['role'];
                 }
             }
 
@@ -1002,15 +1078,20 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
         case "DATABASE" :
                                     $db = new clsDBdefault($bind->username, $bind->password);
             $connect = $db->Provider->try_connect();
-                                    if (!$connect) error_manager("Invalid username/password for DATABASE Login", "SYS-"."0001");
+                                                if (!$connect) error_manager(
+                "Invalid username/password for DATABASE Login"                 , -1                        , false                     , false                     , 'NO_DATA_FONUD'             );
 
             $PARAMETERS->{"PARAMETERS.USERNAME"} = new stdClass();
             $PARAMETERS->{"PARAMETERS.USERNAME"}->value = $bind->username;
             $PARAMETERS->{"PARAMETERS.USERNAME"}->original_name = 'username';
 
-            $PARAMETERS->{"PARAMETERS.ROLES"} = new stdClass();
-            $PARAMETERS->{"PARAMETERS.ROLES"}->value = 'CONNECTED';
-            $PARAMETERS->{"PARAMETERS.ROLES"}->original_name = 'roles';
+            $PARAMETERS->{"PARAMETERS.USERROLE"} = new stdClass();
+            $PARAMETERS->{"PARAMETERS.USERROLE"}->value = 'CONNECT';
+            $PARAMETERS->{"PARAMETERS.USERROLE"}->original_name = 'userrole';
+
+            $PARAMETERS->{"PARAMETERS.USERROLES"} = new stdClass();
+            $PARAMETERS->{"PARAMETERS.USERROLES"}->value = ['CONNECT'];
+            $PARAMETERS->{"PARAMETERS.USERROLES"}->original_name = 'userroles';
 
             $PARAMETERS->{"PARAMETERS.USERID"} = new stdClass();
             $PARAMETERS->{"PARAMETERS.USERID"}->value = $bind->username;
@@ -1065,7 +1146,14 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
                     $array = explode(':',$l);
                     $user = $array[0];
                     $pass = chop($array[1]);
+                    $roles = ((isset($array[2]) and $array[2]) ? $array[2] : null );
                     $res[$user] = $pass;
+                    if (isset($roles)) {
+                        $roles = preg_split('/,/',$roles);
+                    } else {
+                        $roles = ['CONNECT'];
+                    }
+                    $res['_roles_'][$user] = $roles;
                 }
                 return $res;
             }
@@ -1077,15 +1165,22 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
 
                 if (isset($users[$user])) {
                                         $pass = crypt_apr1_md5($pass, $users[$user]);
-                                        
+                                                            if (isset($users['_roles_'][$user])) {
+                        $roles = $users['_roles_'][$user];
+                    }
+
                     if (isset($users[$user]) && ($users[$user] == $pass)) {
                         $PARAMETERS->{"PARAMETERS.USERNAME"} = new stdClass();
                         $PARAMETERS->{"PARAMETERS.USERNAME"}->value = $user;
                         $PARAMETERS->{"PARAMETERS.USERNAME"}->original_name = 'username';
 
-                        $PARAMETERS->{"PARAMETERS.ROLES"} = new stdClass();
-                        $PARAMETERS->{"PARAMETERS.ROLES"}->value = '';
-                        $PARAMETERS->{"PARAMETERS.ROLES"}->original_name = 'roles';
+                        $PARAMETERS->{"PARAMETERS.USERROLES"} = new stdClass();
+                        $PARAMETERS->{"PARAMETERS.USERROLES"}->value = isset($roles) ? $roles : ['CONNECT'];
+                        $PARAMETERS->{"PARAMETERS.USERROLES"}->original_name = 'userroles';
+
+                        $PARAMETERS->{"PARAMETERS.USERROLE"} = new stdClass();
+                        $PARAMETERS->{"PARAMETERS.USERROLE"}->value = isset($roles) ? $roles[0] : 'CONNECT';
+                        $PARAMETERS->{"PARAMETERS.USERROLE"}->original_name = 'userrole';
 
                         $PARAMETERS->{"PARAMETERS.USERID"} = new stdClass();
                         $PARAMETERS->{"PARAMETERS.USERID"}->value = $user;
@@ -1095,43 +1190,55 @@ function APILoginUser($SQL, $loginType = 'LOCAL')
                 }
 
                 if (!$authorized) {
-                    header('WWW-Authenticate: Basic Realm="Login please"');
-                    $_SESSION = array();
-                    error_manager("Invalid username/password for OS Login", "SYS-002");
-                }
+                                                          session_unset();
+                                                            error_manager(
+                        "Invalid username/password for OS Login"                         , -2                                , false                             , 400                             , 'NO_DATA_FONUD'                     );
+                                    }
 
             } else {
-                header('WWW-Authenticate: Basic Realm="Login please"');
-                $_SESSION = array();
-                error_manager("Well formed Basic Authentication required", "SYS-101", 401);
-            }
+                                                session_unset();
+                                                                error_manager(
+                    "Well formed Basic Authentication required"                     , -3                            , false                         , 400                         , 'NO_DATA_FONUD'                 );
+                            }
             break;
         default :
-            error_manager(-20101, "Invalid Login type $loginType");
+            error_manager("Invalid Login type $loginType", -20101);
             break;
     }
 
         unset($PARAMETERS->{"PARAMETERS.PASSWORD"});
 
+            if (!$PARAMETERS->{"PARAMETERS.USERROLE"}->value and  isset($PARAMETERS->{"PARAMETERS.USERROLES"}->value[0])) {
+        $PARAMETERS->{"PARAMETERS.USERROLE"}->value = $PARAMETERS->{"PARAMETERS.USERROLES"}->value[0];
+    }
+
+        if ($PARAMETERS->{"PARAMETERS.USERROLE"}->value and  !(isset($PARAMETERS->{"PARAMETERS.USERROLES"}->value[0]))) {
+        $PARAMETERS->{"PARAMETERS.USERROLES"}->value[0] = $PARAMETERS->{"PARAMETERS.USERROLE"}->value;
+    }
         CCSetSession('USERNAME', $PARAMETERS->{"PARAMETERS.USERNAME"}->value );
     CCSetSession('USERID', $PARAMETERS->{"PARAMETERS.USERID"}->value );
-    CCSetSession('USERROLES', $PARAMETERS->{"PARAMETERS.ROLES"}->value );
+    CCSetSession('USERROLE', $PARAMETERS->{"PARAMETERS.USERROLE"}->value );
+    CCSetSession('USERROLES', $PARAMETERS->{"PARAMETERS.USERROLES"}->value );
+
     global $SYSTEM;
     $SYSTEM->{'USERNAME'} = CCGetSession('USERNAME');
     $SYSTEM->{'USERID'} = CCGetSession('USERID');
+    $SYSTEM->{'USERROLE'} = CCGetSession('USERROLE');
     $SYSTEM->{'USERROLES'} = CCGetSession('USERROLES');
     
     global $CONFIG;
-    if ($CONFIG->autenticationmethod == 'TOKEN') {
-                $token = array(
+    if ($CONFIG->authenticationmethod == 'TOKEN') {
+                $data = new stdClass();
+        $data->{'username'} = $SYSTEM->USERNAME;
+        $data->{'userroles'} = $SYSTEM->USERROLES;
+        $token = array(
             "iss" => "API5"
         ,"sub" => "API5"
         ,"aud" => "user"
         ,"iat" => time()
         ,"exp" => time()+ (7 * 24 * 60 * 60)         ,"nbf" => 1357000000
                     ,"uid" => $SYSTEM->USERID
-        ,"data" => '{"username":"'.$SYSTEM->USERNAME.'"'
-                .', "userroles":'.(is_array($SYSTEM->USERROLES) ? json_encode($SYSTEM->ROLES) : '"'.$SYSTEM->USERROLES.'"' ).'}'
+        ,"data" => $data
         );
 
         $jwt = JWT::encode($token, $CONFIG->tokenKey);

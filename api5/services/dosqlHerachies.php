@@ -10,8 +10,8 @@
  | See the LICENSE file for a full license statement.                    |
  |                                                                       |
  | Production                                                            |
- |   Date   : 02/25/2018                                                 |
- |   Time   : 03:57:51 PM                                                |
+ |   Date   : 03/04/2018                                                 |
+ |   Time   : 05:37:54 PM                                                |
  |   Version: 0.0.1                                                      |
  +-----------------------------------------------------------------------+
  | Author: Santo Nuzzolilo <snuzzolillo@gmail.com>                       |
@@ -124,7 +124,7 @@ Class clsHierarchiesResult {
     function hierarchiesRequestByNodeType($SQL = '')
     {
 
-                                                        $SQL = getSentenceByMethod($SQL);
+                                                        $SQL = clsCore::getSentenceByMethod($SQL);
 
                         global $BIND;
         $bind = $BIND;
@@ -151,7 +151,7 @@ Class clsHierarchiesResult {
     function hierarchiesRequestSimple($SQL = '')
     {
 
-                $SQL = getSentenceByMethod($SQL);
+                $SQL = clsCore::getSentenceByMethod($SQL);
 
                                         global $BIND;
         $bind = $BIND;
@@ -209,7 +209,7 @@ Class clsHierarchiesResult {
     function hierarchiesRequestMD($JSON = '')
     {
 
-                $SQL = getSentenceByMethod($JSON);
+                $SQL = clsCore::getSentenceByMethod($JSON);
 
                                                 $Relation = json_decode_and_validate($JSON,"hierarchiesRequestMD in hierarchiesRequest bad json");
         $Relation = clsCore::normalizeJSONObjectAttrName($Relation);
@@ -419,7 +419,7 @@ Class clsHierarchiesResult {
         global $BIND;
         $bind = $BIND;
 
-                $SQL = getSentenceByMethod($JSON);
+                $SQL = clsCore::getSentenceByMethod($JSON);
 
         $Relation = json_decode_and_validate($JSON,"hierarchiesRequestTEST in hierarchiesRequest bad json");
         $Relation = clsCore::normalizeJSONObjectAttrName($Relation);
